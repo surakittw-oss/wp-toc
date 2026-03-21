@@ -809,38 +809,75 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   if (!originalText.trim()) return ''
 
   const style = STYLES[cat]
+
+  // ── ตรวจว่า input เป็น HTML หรือ plain text ──
+  const isHTML = /<(span|p|div|strong|b|h[1-6]|ul|li|br)\s*[^>]*>/i.test(originalText)
+
   let text = originalText
 
-  // แทนที่ H2 ทุกรูปแบบด้วย tag ใหม่ที่มี id= และ style
-  // พร้อมเพิ่ม &nbsp; ก่อนและหลัง h2 ให้ตรงกับ format WordPress
+  // ── แทนที่ H2 ทุกรูปแบบด้วย tag ใหม่ ──
   activeHeadings.forEach((h, i) => {
     const sectionId = `section${i + 1}`
-    const newTag = `&nbsp;\n<h2 id="${sectionId}" style="${style}">${h}</h2>\n&nbsp;`
-    const escaped = h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const newTag = `%%H2_START%%<h2 id="${sectionId}" style="${style}">${h}</h2>%%H2_END%%`
+    const esc = h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-    // ## หัวข้อ
-    text = text.replace(new RegExp(`^#{1,2}\\s+${escaped}\\s*$`, 'gm'), newTag)
-    // **หัวข้อ**
-    text = text.replace(new RegExp(`^\\*\\*${escaped}\\*\\*\\s*$`, 'gm'), newTag)
-    // <strong>หัวข้อ</strong>
-    text = text.replace(new RegExp(`^<strong>${escaped}<\/strong>\\s*$`, 'gm'), newTag)
-    // <b>หัวข้อ</b>
-    text = text.replace(new RegExp(`^<b>${escaped}<\/b>\\s*$`, 'gm'), newTag)
-    // 1. หัวข้อ (numbered) — เก็บตัวเลขไว้ด้วย
-    text = text.replace(new RegExp(`^\\d+\\.\\s+${escaped}\\s*$`, 'gm'), newTag)
-    // plain text โดดๆ
-    text = text.replace(new RegExp(`^${escaped}\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^#{1,2}\\s+${esc}\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^\\*\\*${esc}\\*\\*\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^<strong>${esc}<\/strong>\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^<b>${esc}<\/b>\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^\\d+\\.\\s+${esc}\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^${esc}\\s*$`, 'gm'), newTag)
   })
 
-  // แทรก TOC หลังย่อหน้าแรก
-  // หาบรรทัดว่างแรกที่มีเนื้อหาก่อนหน้า
+  // ── plain text: จัด paragraph ด้วย <span> + &nbsp; ──
+  if (!isHTML) {
+    // แยกเป็น "blocks" โดยใช้บรรทัดว่างเป็นตัวคั่น
+    // แต่ละ block คือ paragraph หนึ่งอัน (อาจมีหลายบรรทัดต่อกัน)
+    const blocks = text.split(/\n\s*\n/)
+    const processed = []
+
+    for (const block of blocks) {
+      const trimmed = block.trim()
+      if (!trimmed) continue
+
+      if (trimmed.startsWith('%%H2_START%%')) {
+        // H2 block — ใส่ &nbsp; คั่นก่อน-หลัง
+        const h2tag = trimmed.replace('%%H2_START%%','').replace('%%H2_END%%','')
+        processed.push('&nbsp;')
+        processed.push(h2tag)
+        processed.push('&nbsp;')
+      } else if (trimmed.startsWith('<')) {
+        // HTML ที่ติดมา เก็บไว้เดิม
+        processed.push(trimmed)
+        processed.push('&nbsp;')
+      } else {
+        // paragraph ธรรมดา — รวมทุกบรรทัดในบล็อกเป็น 1 <span>
+        const combined = trimmed.split('\n').map(l => l.trim()).filter(Boolean).join(' ')
+        processed.push(`<span style="font-weight: 400;">${combined}</span>`)
+        processed.push('&nbsp;')
+      }
+    }
+
+    text = processed.join('\n')
+
+  } else {
+    // HTML mode — แค่ replace marker กลับเป็น h2 tag + &nbsp;
+    text = text.replace(/%%H2_START%%(<h2[^>]+>[^<]*<\/h2>)%%H2_END%%/g,
+      '&nbsp;\n$1\n&nbsp;')
+  }
+
+  // ── แทรก TOC หลังย่อหน้าแรก (หลัง <span> แรก หรือ &nbsp; แรก) ──
   const lines = text.split('\n')
   let insertIdx = lines.length
   let hasContent = false
 
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim()
-    if (trimmed && trimmed !== '&nbsp;') {
+    const isContentLine = trimmed &&
+      trimmed !== '&nbsp;' &&
+      !trimmed.startsWith('<h2 ') &&
+      !trimmed.startsWith('%%')
+    if (isContentLine) {
       hasContent = true
     } else if (hasContent && (!trimmed || trimmed === '&nbsp;')) {
       insertIdx = i + 1
@@ -848,7 +885,6 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     }
   }
 
-  // แทรก TOC พร้อม &nbsp; คั่น ให้เข้ากับ format WordPress
   lines.splice(insertIdx, 0, '&nbsp;', tocHtml, '&nbsp;')
   return lines.join('\n')
 }

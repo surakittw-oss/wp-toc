@@ -503,7 +503,7 @@
         <div class="category-label">วางบทความ หรือพิมพ์หัวข้อ H2</div>
         <textarea
           id="input-text"
-          placeholder="วางบทความทั้งหมดที่นี่ — Claude จะ detect H2 ให้อัตโนมัติ&#10;&#10;หรือพิมพ์หัวข้อตรงๆ เช่น:&#10;## Apple ประกาศ iPhone 17&#10;## ราคาและวันวางจำหน่าย&#10;## สเปคและฟีเจอร์ใหม่"
+          placeholder="โหมด 1 — พิมพ์หัวข้อทีละบรรทัด (แนะนำ):&#10;เปิด 2 ฉากทัศน์เศรษฐกิจไทย&#10;ราคาน้ำมันพุ่ง กระทบค่าครองชีพ&#10;แนวโน้มดอกเบี้ยปี 2569&#10;&#10;โหมด 2 — ใช้ ## นำหน้า:&#10;## Apple ประกาศ iPhone 17&#10;## ราคาและวันวางจำหน่าย&#10;&#10;โหมด 3 — วางบทความทั้งหมดที่มี ## หรือ <h2> ระบบจะ detect ให้อัตโนมัติ"
         ></textarea>
       </div>
 
@@ -598,19 +598,29 @@ function extractH2(text) {
   const lines = text.split('\n')
   const result = []
 
-  for (const line of lines) {
-    const trimmed = line.trim()
+  // โหมด 1: ตรวจว่ามี ## หรือ <h2> ในข้อความไหม
+  const hasMarkdown = lines.some(l => /^#{1,2}\s+.+/.test(l.trim()))
+  const hasHTML     = lines.some(l => /<h2[^>]*>[^<]+<\/h2>/i.test(l.trim()))
 
-    // Markdown: ## หัวข้อ
-    const mdMatch = trimmed.match(/^#{1,2}\s+(.+)$/)
-    if (mdMatch) { result.push(mdMatch[1].trim()); continue }
-
-    // HTML: <h2>หัวข้อ</h2> หรือ <h2 ...>หัวข้อ</h2>
-    const htmlMatch = trimmed.match(/<h2[^>]*>([^<]+)<\/h2>/i)
-    if (htmlMatch) { result.push(htmlMatch[1].trim()); continue }
-
-    // Plain text ที่มีแค่ข้อความ + บรรทัดก่อนหน้าว่าง (heuristic)
-    // ไม่ใช้ heuristic เพื่อป้องกัน false positive
+  if (hasMarkdown || hasHTML) {
+    // โหมด Markdown / HTML
+    for (const line of lines) {
+      const trimmed = line.trim()
+      const mdMatch   = trimmed.match(/^#{1,2}\s+(.+)$/)
+      if (mdMatch) { result.push(mdMatch[1].trim()); continue }
+      const htmlMatch = trimmed.match(/<h2[^>]*>([^<]+)<\/h2>/i)
+      if (htmlMatch) { result.push(htmlMatch[1].trim()); continue }
+    }
+  } else {
+    // โหมด Plain text — แต่ละบรรทัดที่ไม่ว่างคือ 1 หัวข้อ H2
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed) continue
+      if (/^[-*•]\s/.test(trimmed)) continue
+      if (/^\d+\.\s/.test(trimmed)) continue
+      if (/^<[^>]+>/.test(trimmed)) continue
+      result.push(trimmed)
+    }
   }
 
   return result

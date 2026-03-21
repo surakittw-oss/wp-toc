@@ -239,6 +239,73 @@
     background: rgba(255,255,255,0.05);
     border-radius: 4px;
   }
+  /* manual mode */
+  .mode-toggle {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--sub);
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .mode-btn:hover { color: var(--text); border-color: #444; }
+  .mode-btn.active { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+  /* manual line highlight */
+  .manual-line {
+    display: block;
+    width: 100%;
+    padding: 5px 10px;
+    margin: 1px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--sub);
+    line-height: 1.5;
+    transition: all 0.1s;
+    text-align: left;
+    border: 1px solid transparent;
+    background: transparent;
+    font-family: var(--sans);
+    word-break: break-word;
+  }
+  .manual-line:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .manual-line.selected {
+    background: var(--red-dim);
+    border-color: rgba(230,34,39,0.3);
+    color: var(--text);
+    font-weight: 500;
+  }
+  .manual-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .manual-container {
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    background: rgba(255,255,255,0.01);
+  }
+
   .h2-chip.removed {
     opacity: 0.25;
     text-decoration: line-through;
@@ -524,7 +591,7 @@
         <div class="category-label">วางบทความ หรือพิมพ์หัวข้อ H2</div>
         <textarea
           id="input-text"
-          placeholder="วิธีที่ 1 — พิมพ์หัวข้อด้วยเลข (แนะนำที่สุด):&#10;1. อยู่กับปัจจุบันให้เป็น&#10;2. ให้รางวัลตัวเอง&#10;3. หาเพื่อนร่วมทาง&#10;&#10;วิธีที่ 2 — เว้นบรรทัดว่างทั้งสองด้าน:&#10;&#10;อยู่กับปัจจุบันให้เป็น&#10;&#10;ให้รางวัลตัวเอง&#10;&#10;วิธีที่ 3 — ใช้ ## นำหน้า:&#10;## อยู่กับปัจจุบันให้เป็น&#10;## ให้รางวัลตัวเอง&#10;&#10;วิธีที่ 4 — วางบทความเต็มที่มี <h2> ระบบ detect เอง"
+          placeholder="วิธีที่ 1 — ตัวเลข + หัวข้อ (ตัวเลขจะอยู่ใน H2 ด้วย):&#10;1. Apple iPhone 17 มีอะไรใหม่&#10;2. ราคาและวันวางจำหน่าย&#10;3. เปรียบเทียบกับ Android&#10;&#10;วิธีที่ 2 — ตัวหนาโดดๆ (copy จาก Google Docs ได้เลย):&#10;**Apple iPhone 17 มีอะไรใหม่**&#10;**ราคาและวันวางจำหน่าย**&#10;&#10;วิธีที่ 3 — ใช้ ## นำหน้า:&#10;## Apple iPhone 17 มีอะไรใหม่&#10;&#10;วิธีที่ 4 — วางบทความเต็มที่มี <h2> ระบบ detect เอง"
         ></textarea>
       </div>
 
@@ -562,6 +629,9 @@
       </button>
       <button class="tab" onclick="switchTab('toc')" id="tab-toc">
         TOC Block
+      </button>
+      <button class="tab" onclick="switchTab('full')" id="tab-full">
+        บทความรวม
       </button>
       <button class="tab" onclick="switchTab('guide')" id="tab-guide">
         วิธีใช้
@@ -612,7 +682,7 @@ const STYLES = {
 let selectedCat = 'TSD'
 let detectedH2  = []
 let removedSet  = new Set()   // index ของ H2 ที่กาทิ้ง
-let outputs     = { h2: '', toc: '' }
+let outputs     = { h2: '', toc: '', full: '' }
 let activeTab   = 'h2'
 
 // ── EXTRACT H2 ─────────────────────────────────────────
@@ -634,14 +704,19 @@ function extractH2(text) {
   const hasMarkdown = lines.some(l => /^#{1,2}\s+.+/.test(l.trim()))
   const hasHTML     = lines.some(l => /<h2[^>]*>[^<]+<\/h2>/i.test(l.trim()))
 
-  // โหมด B: **bold** หรือ <strong> โดดๆ
-  const hasBold = lines.some(l => /^\*\*[^*]+\*\*$/.test(l.trim()) || /^<strong>[^<]+<\/strong>$/.test(l.trim()))
+  // โหมด B: **bold** หรือ <strong> หรือ <b> โดดๆ ทั้งบรรทัด
+  const hasBold = lines.some(l => {
+    const t = l.trim()
+    return /^\*\*[^*]+\*\*$/.test(t) ||
+           /^<strong>[^<]+<\/strong>$/.test(t) ||
+           /^<b>[^<]+<\/b>$/.test(t)
+  })
 
-  // โหมด C: numbered list "1. หัวข้อ" ทีละบรรทัด
+  // โหมด C: numbered list "1. หัวข้อ" (ตัวเลขเป็นส่วนหนึ่งของหัวข้อ เก็บไว้ครบ)
   const hasNumbered = lines.filter(l => /^\d+\.\s+.{3,}/.test(l.trim())).length >= 2
 
   if (hasMarkdown || hasHTML) {
-    // โหมด A
+    // โหมด A — Markdown / HTML tag
     for (const line of lines) {
       const trimmed = line.trim()
       const mdMatch = trimmed.match(/^#{1,2}\s+(.+)$/)
@@ -651,21 +726,28 @@ function extractH2(text) {
     }
 
   } else if (hasBold) {
-    // โหมด B
+    // โหมด B — ตัวหนาโดดๆ (รองรับ copy จาก Google Docs)
+    // **text**, <strong>text</strong>, <b>text</b>
     for (const line of lines) {
       const trimmed = line.trim()
-      const boldMd   = trimmed.match(/^\*\*([^*]+)\*\*$/)
-      if (boldMd) { result.push(boldMd[1].trim()); continue }
-      const boldHtml = trimmed.match(/^<strong>([^<]+)<\/strong>$/)
-      if (boldHtml) { result.push(boldHtml[1].trim()); continue }
+      // **bold**
+      const boldMd = trimmed.match(/^\*\*([^*]+)\*\*$/)
+      if (boldMd && !isNoise(boldMd[1].trim())) { result.push(boldMd[1].trim()); continue }
+      // <strong>text</strong>
+      const boldStrong = trimmed.match(/^<strong>([^<]+)<\/strong>$/)
+      if (boldStrong && !isNoise(boldStrong[1].trim())) { result.push(boldStrong[1].trim()); continue }
+      // <b>text</b>
+      const boldB = trimmed.match(/^<b>([^<]+)<\/b>$/)
+      if (boldB && !isNoise(boldB[1].trim())) { result.push(boldB[1].trim()); continue }
     }
 
   } else if (hasNumbered) {
-    // โหมด C — numbered list เช่น "1. หัวข้อ" "2. หัวข้อ"
+    // โหมด C — numbered list เก็บตัวเลขไว้ด้วย เช่น "1. Apple iPhone"
     for (const line of lines) {
       const trimmed = line.trim()
-      const numMatch = trimmed.match(/^\d+\.\s+(.+)$/)
+      const numMatch = trimmed.match(/^(\d+\.\s+.+)$/)
       if (numMatch && !isNoise(numMatch[1].trim())) {
+        // เก็บทั้งหมดรวมตัวเลข เช่น "1. Apple iPhone"
         result.push(numMatch[1].trim())
       }
     }
@@ -720,6 +802,50 @@ function buildTOCOutput(headings) {
 ${items}
   </ul>
 </div>`
+}
+
+// ── BUILD FULL ARTICLE OUTPUT ─────────────────────────
+function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
+  if (!originalText.trim()) return ''
+
+  const style = STYLES[cat]
+  let text = originalText
+
+  // แทนที่ H2 ทุกรูปแบบด้วย tag ใหม่
+  activeHeadings.forEach((h, i) => {
+    const sectionId = `section${i + 1}`
+    const newTag = `<h2 id="${sectionId}" style="${style}">${h}</h2>`
+    const escaped = h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+    text = text.replace(new RegExp(`^#{1,2}\\s+${escaped}\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^\\*\\*${escaped}\\*\\*\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^<strong>${escaped}<\/strong>\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^<b>${escaped}<\/b>\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^\\d+\\.\\s+${escaped}\\s*$`, 'gm'), newTag)
+    text = text.replace(new RegExp(`^${escaped}\\s*$`, 'gm'), newTag)
+  })
+
+  // แทรก TOC หลังย่อหน้าแรก
+  // ย่อหน้าแรก = เนื้อหาจนถึงบรรทัดว่างแรก หรือ <h2> แรก หรือ 200 ตัวอักษร
+  const lines = text.split('\n')
+  let insertIdx = lines.length // default ท้ายสุด
+
+  // หาตำแหน่ง "จบย่อหน้าแรก" = บรรทัดว่างแรกที่มีเนื้อหาก่อนหน้า
+  let hasContent = false
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim()
+    if (trimmed) {
+      hasContent = true
+    } else if (hasContent) {
+      // บรรทัดว่างหลังมีเนื้อหา = จบย่อหน้าแรก
+      insertIdx = i + 1
+      break
+    }
+  }
+
+  // แทรก TOC หลังย่อหน้าแรก
+  lines.splice(insertIdx, 0, '', tocHtml, '')
+  return lines.join('\n')
 }
 
 // ── RENDER DETECTED H2 ────────────────────────────────
@@ -777,8 +903,12 @@ function generate() {
   const activeH2 = detectedH2.filter((_, i) => !removedSet.has(i))
   if (activeH2.length === 0) return
 
-  outputs.h2  = buildH2Output(activeH2, selectedCat)
-  outputs.toc = buildTOCOutput(activeH2)
+  outputs.h2   = buildH2Output(activeH2, selectedCat)
+  outputs.toc  = buildTOCOutput(activeH2)
+  outputs.full = buildFullOutput(
+    document.getElementById('input-text').value,
+    activeH2, selectedCat, outputs.toc
+  )
 
   // Show tabs + output
   document.getElementById('empty-state').style.display = 'none'
@@ -822,6 +952,19 @@ function switchTab(tab) {
       </div>
       <p style="font-size:11px; color:var(--muted); margin-top:8px;">วาง code นี้ก่อนย่อหน้าแรกของบทความ</p>
     `
+  } else if (tab === 'full') {
+    body.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:11px; color:var(--sub); text-transform:uppercase; letter-spacing:1.5px; font-weight:600;">บทความรวม — TOC + เนื้อหา + H2 พร้อม id</span>
+        <button class="btn-copy" onclick="copyCode('full')">Copy ทั้งหมด</button>
+      </div>
+      <div class="code-wrap">
+        <div class="code-output" id="code-full">${escHtml(outputs.full)}</div>
+      </div>
+      <p style="font-size:11px; color:var(--muted); margin-top:8px;">
+        TOC block อยู่บนสุด ตามด้วยเนื้อหาที่ H2 ถูก replace แล้ว — วางลง Classic Editor ได้เลย
+      </p>
+    `
   } else if (tab === 'guide') {
     body.innerHTML = `
       <div style="color:var(--sub); font-size:11px; text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin-bottom:12px;">วิธีใช้งานใน WordPress Classic Editor</div>
@@ -842,8 +985,9 @@ function switchTab(tab) {
 
 // ── COPY ──────────────────────────────────────────────
 function copyCode(which) {
+  const labels = { h2: 'H2 code', toc: 'TOC block', full: 'บทความรวม' }
   navigator.clipboard.writeText(outputs[which]).then(() => {
-    showToast('Copied ' + (which === 'h2' ? 'H2 code' : 'TOC block') + ' แล้ว!')
+    showToast('Copied ' + (labels[which] || which) + ' แล้ว!')
   })
 }
 

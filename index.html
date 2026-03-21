@@ -524,7 +524,7 @@
         <div class="category-label">วางบทความ หรือพิมพ์หัวข้อ H2</div>
         <textarea
           id="input-text"
-          placeholder="แนะนำ — พิมพ์แค่หัวข้อ H2 ทีละบรรทัด (เว้น 1 บรรทัดว่างคั่นแต่ละอัน):&#10;&#10;โดนหางเลขจาก น้ำมันแพง&#10;&#10;ค่าไฟ ตัวมารสามัญประจำบ้าน&#10;&#10;แชร์ 4 เทคนิค WFH&#10;&#10;─────────────────&#10;หรือใช้ ## นำหน้าก็ได้:&#10;## โดนหางเลขจาก น้ำมันแพง&#10;## ค่าไฟ ตัวมารสามัญประจำบ้าน&#10;&#10;─────────────────&#10;หรือวางบทความเต็มที่มี <h2> หรือ ## ระบบจะ detect เอง"
+          placeholder="วิธีที่ 1 — พิมพ์หัวข้อด้วยเลข (แนะนำที่สุด):&#10;1. อยู่กับปัจจุบันให้เป็น&#10;2. ให้รางวัลตัวเอง&#10;3. หาเพื่อนร่วมทาง&#10;&#10;วิธีที่ 2 — เว้นบรรทัดว่างทั้งสองด้าน:&#10;&#10;อยู่กับปัจจุบันให้เป็น&#10;&#10;ให้รางวัลตัวเอง&#10;&#10;วิธีที่ 3 — ใช้ ## นำหน้า:&#10;## อยู่กับปัจจุบันให้เป็น&#10;## ให้รางวัลตัวเอง&#10;&#10;วิธีที่ 4 — วางบทความเต็มที่มี <h2> ระบบ detect เอง"
         ></textarea>
       </div>
 
@@ -620,32 +620,28 @@ function extractH2(text) {
   const lines = text.split('\n')
   const result = []
 
-  // ── กรองบรรทัดที่เป็น noise ออกก่อนทุกโหมด ──
   function isNoise(str) {
     if (!str) return true
-    // credit/caption เช่น "ภาพ: xxx", "Photo: xxx", "ที่มา: xxx"
     if (/^(ภาพ|ภาพประกอบ|photo|image|credit|source|ที่มา|อ้างอิง|ref)\s*:/i.test(str)) return true
-    // Getty / Shutterstock / AP / Reuters ในบรรทัด
     if (/getty images|shutterstock|alamy|reuters|ap photo|afp/i.test(str)) return true
-    // URL
     if (/^https?:\/\//i.test(str)) return true
-    // tag HTML อื่นๆ
     if (/^<[^h][^>]*>/i.test(str)) return true
-    // bullet / numbered list
-    if (/^[-*•]\s/.test(str)) return true
-    if (/^\d+\.\s/.test(str)) return true
+    if (/\s\/\s/.test(str)) return true
     return false
   }
 
-  // โหมด A: มี ## หรือ <h2>
+  // โหมด A: ## หรือ <h2>
   const hasMarkdown = lines.some(l => /^#{1,2}\s+.+/.test(l.trim()))
   const hasHTML     = lines.some(l => /<h2[^>]*>[^<]+<\/h2>/i.test(l.trim()))
 
-  // โหมด B: มี **bold** หรือ <strong> โดดๆ
+  // โหมด B: **bold** หรือ <strong> โดดๆ
   const hasBold = lines.some(l => /^\*\*[^*]+\*\*$/.test(l.trim()) || /^<strong>[^<]+<\/strong>$/.test(l.trim()))
 
+  // โหมด C: numbered list "1. หัวข้อ" ทีละบรรทัด
+  const hasNumbered = lines.filter(l => /^\d+\.\s+.{3,}/.test(l.trim())).length >= 2
+
   if (hasMarkdown || hasHTML) {
-    // โหมด A — Markdown / HTML tag
+    // โหมด A
     for (const line of lines) {
       const trimmed = line.trim()
       const mdMatch = trimmed.match(/^#{1,2}\s+(.+)$/)
@@ -655,7 +651,7 @@ function extractH2(text) {
     }
 
   } else if (hasBold) {
-    // โหมด B — Bold บรรทัดเดียว
+    // โหมด B
     for (const line of lines) {
       const trimmed = line.trim()
       const boldMd   = trimmed.match(/^\*\*([^*]+)\*\*$/)
@@ -664,28 +660,29 @@ function extractH2(text) {
       if (boldHtml) { result.push(boldHtml[1].trim()); continue }
     }
 
-  } else {
-    // โหมด C — Plain text อัจฉริยะ
-    // หลักการ: H2 จริงต้องผ่านทุกเงื่อนไข
-    // 1. ไม่ใช่ noise (credit, URL, bullet ฯลฯ)
-    // 2. ความยาว 5–100 ตัวอักษร
-    // 3. ไม่จบด้วย . , ; ที่บ่งบอกว่าเป็นประโยคยาว
-    // 4. ไม่มี / ที่บ่งบอก credit เช่น "ภาพ / Getty"
-    // 5. บรรทัดทั้งสองด้านเป็นบรรทัดว่าง (โดดๆ จริงๆ)
+  } else if (hasNumbered) {
+    // โหมด C — numbered list เช่น "1. หัวข้อ" "2. หัวข้อ"
+    for (const line of lines) {
+      const trimmed = line.trim()
+      const numMatch = trimmed.match(/^\d+\.\s+(.+)$/)
+      if (numMatch && !isNoise(numMatch[1].trim())) {
+        result.push(numMatch[1].trim())
+      }
+    }
 
+  } else {
+    // โหมด D — Plain text อัจฉริยะ
+    // บรรทัดว่างทั้งสองด้าน + ไม่ noise + ความยาว 5-100
     for (let i = 0; i < lines.length; i++) {
       const trimmed = lines[i].trim()
       if (!trimmed) continue
       if (isNoise(trimmed)) continue
       if (trimmed.length < 5 || trimmed.length > 100) continue
       if (/[.,;]$/.test(trimmed)) continue
-      // มี slash กลางบรรทัด = likely credit "ชื่อ / สำนักข่าว"
-      if (/\s\/\s/.test(trimmed)) continue
 
       const prevEmpty = i === 0 || lines[i-1].trim() === ''
       const nextEmpty = i === lines.length - 1 || lines[i+1].trim() === ''
 
-      // ต้องมีบรรทัดว่างทั้งสองด้าน (เข้มงวดขึ้น)
       if (prevEmpty && nextEmpty) {
         result.push(trimmed)
       }

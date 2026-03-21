@@ -811,40 +811,45 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   const style = STYLES[cat]
   let text = originalText
 
-  // แทนที่ H2 ทุกรูปแบบด้วย tag ใหม่
+  // แทนที่ H2 ทุกรูปแบบด้วย tag ใหม่ที่มี id= และ style
+  // พร้อมเพิ่ม &nbsp; ก่อนและหลัง h2 ให้ตรงกับ format WordPress
   activeHeadings.forEach((h, i) => {
     const sectionId = `section${i + 1}`
-    const newTag = `<h2 id="${sectionId}" style="${style}">${h}</h2>`
+    const newTag = `&nbsp;\n<h2 id="${sectionId}" style="${style}">${h}</h2>\n&nbsp;`
     const escaped = h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
+    // ## หัวข้อ
     text = text.replace(new RegExp(`^#{1,2}\\s+${escaped}\\s*$`, 'gm'), newTag)
+    // **หัวข้อ**
     text = text.replace(new RegExp(`^\\*\\*${escaped}\\*\\*\\s*$`, 'gm'), newTag)
+    // <strong>หัวข้อ</strong>
     text = text.replace(new RegExp(`^<strong>${escaped}<\/strong>\\s*$`, 'gm'), newTag)
+    // <b>หัวข้อ</b>
     text = text.replace(new RegExp(`^<b>${escaped}<\/b>\\s*$`, 'gm'), newTag)
+    // 1. หัวข้อ (numbered) — เก็บตัวเลขไว้ด้วย
     text = text.replace(new RegExp(`^\\d+\\.\\s+${escaped}\\s*$`, 'gm'), newTag)
+    // plain text โดดๆ
     text = text.replace(new RegExp(`^${escaped}\\s*$`, 'gm'), newTag)
   })
 
   // แทรก TOC หลังย่อหน้าแรก
-  // ย่อหน้าแรก = เนื้อหาจนถึงบรรทัดว่างแรก หรือ <h2> แรก หรือ 200 ตัวอักษร
+  // หาบรรทัดว่างแรกที่มีเนื้อหาก่อนหน้า
   const lines = text.split('\n')
-  let insertIdx = lines.length // default ท้ายสุด
-
-  // หาตำแหน่ง "จบย่อหน้าแรก" = บรรทัดว่างแรกที่มีเนื้อหาก่อนหน้า
+  let insertIdx = lines.length
   let hasContent = false
+
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim()
-    if (trimmed) {
+    if (trimmed && trimmed !== '&nbsp;') {
       hasContent = true
-    } else if (hasContent) {
-      // บรรทัดว่างหลังมีเนื้อหา = จบย่อหน้าแรก
+    } else if (hasContent && (!trimmed || trimmed === '&nbsp;')) {
       insertIdx = i + 1
       break
     }
   }
 
-  // แทรก TOC หลังย่อหน้าแรก
-  lines.splice(insertIdx, 0, '', tocHtml, '')
+  // แทรก TOC พร้อม &nbsp; คั่น ให้เข้ากับ format WordPress
+  lines.splice(insertIdx, 0, '&nbsp;', tocHtml, '&nbsp;')
   return lines.join('\n')
 }
 
@@ -959,7 +964,7 @@ function switchTab(tab) {
         <button class="btn-copy" onclick="copyCode('full')">Copy ทั้งหมด</button>
       </div>
       <div class="code-wrap">
-        <div class="code-output" id="code-full">${escHtml(outputs.full)}</div>
+        <div class="code-output" id="code-full" style="white-space:pre-wrap;">${escHtmlFull(outputs.full)}</div>
       </div>
       <p style="font-size:11px; color:var(--muted); margin-top:8px;">
         TOC block อยู่บนสุด ตามด้วยเนื้อหาที่ H2 ถูก replace แล้ว — วางลง Classic Editor ได้เลย
@@ -1013,6 +1018,15 @@ function escHtml(str) {
     .replace(/"/g,'&quot;')
     .replace(/\n\n/g,'<br><br>')
     .replace(/\n/g,'<br>')
+}
+
+// สำหรับ tab บทความรวม — รักษา newline เป็น whitespace จริงๆ
+function escHtmlFull(str) {
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
 }
 
 // ── EVENT LISTENERS ───────────────────────────────────

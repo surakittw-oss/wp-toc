@@ -503,7 +503,7 @@
         <div class="category-label">วางบทความ หรือพิมพ์หัวข้อ H2</div>
         <textarea
           id="input-text"
-          placeholder="โหมด 1 — พิมพ์หัวข้อทีละบรรทัด (แนะนำ):&#10;เปิด 2 ฉากทัศน์เศรษฐกิจไทย&#10;ราคาน้ำมันพุ่ง กระทบค่าครองชีพ&#10;แนวโน้มดอกเบี้ยปี 2569&#10;&#10;โหมด 2 — ใช้ ## นำหน้า:&#10;## Apple ประกาศ iPhone 17&#10;## ราคาและวันวางจำหน่าย&#10;&#10;โหมด 3 — วางบทความทั้งหมดที่มี ## หรือ <h2> ระบบจะ detect ให้อัตโนมัติ"
+          placeholder="โหมด A — พิมพ์หัวข้อทีละบรรทัด (เว้นบรรทัดก่อน/หลัง):&#10;&#10;เปิด 2 ฉากทัศน์เศรษฐกิจไทย&#10;&#10;ราคาน้ำมันพุ่ง กระทบค่าครองชีพ&#10;&#10;โหมด B — ตัวหนา **หัวข้อ** บรรทัดเดียว:&#10;**เปิด 2 ฉากทัศน์เศรษฐกิจไทย**&#10;**ราคาน้ำมันพุ่ง กระทบค่าครองชีพ**&#10;&#10;โหมด C — ใช้ ## นำหน้า:&#10;## Apple ประกาศ iPhone 17&#10;&#10;โหมด D — วางบทความเต็ม (ระบบ detect ## หรือ <h2> เอง)"
         ></textarea>
       </div>
 
@@ -601,9 +601,11 @@ function extractH2(text) {
   // โหมด 1: ตรวจว่ามี ## หรือ <h2> ในข้อความไหม
   const hasMarkdown = lines.some(l => /^#{1,2}\s+.+/.test(l.trim()))
   const hasHTML     = lines.some(l => /<h2[^>]*>[^<]+<\/h2>/i.test(l.trim()))
+  // โหมด Bold: **หัวข้อ** หรือ <strong>หัวข้อ</strong> โดดๆ
+  const hasBold     = lines.some(l => /^\*\*[^*]+\*\*$/.test(l.trim()) || /^<strong>[^<]+<\/strong>$/.test(l.trim()))
 
   if (hasMarkdown || hasHTML) {
-    // โหมด Markdown / HTML
+    // โหมด Markdown / HTML tag
     for (const line of lines) {
       const trimmed = line.trim()
       const mdMatch   = trimmed.match(/^#{1,2}\s+(.+)$/)
@@ -611,15 +613,37 @@ function extractH2(text) {
       const htmlMatch = trimmed.match(/<h2[^>]*>([^<]+)<\/h2>/i)
       if (htmlMatch) { result.push(htmlMatch[1].trim()); continue }
     }
-  } else {
-    // โหมด Plain text — แต่ละบรรทัดที่ไม่ว่างคือ 1 หัวข้อ H2
+  } else if (hasBold) {
+    // โหมด Bold — **หัวข้อ** หรือ <strong>หัวข้อ</strong> บรรทัดเดียว
     for (const line of lines) {
       const trimmed = line.trim()
+      const boldMd  = trimmed.match(/^\*\*([^*]+)\*\*$/)
+      if (boldMd) { result.push(boldMd[1].trim()); continue }
+      const boldHtml = trimmed.match(/^<strong>([^<]+)<\/strong>$/)
+      if (boldHtml) { result.push(boldHtml[1].trim()); continue }
+    }
+  } else {
+    // โหมด Smart plain text:
+    // detect เฉพาะบรรทัดที่ "สั้น + โดดๆ" คือ
+    // - ความยาว ≤ 80 ตัวอักษร
+    // - บรรทัดก่อนหน้า และ/หรือ ถัดไปเป็นบรรทัดว่าง หรือเป็น H2 อื่น
+    // - ไม่ใช่ paragraph (ไม่จบด้วย . หรือ , หรือ ว่าง)
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim()
       if (!trimmed) continue
-      if (/^[-*•]\s/.test(trimmed)) continue
-      if (/^\d+\.\s/.test(trimmed)) continue
-      if (/^<[^>]+>/.test(trimmed)) continue
-      result.push(trimmed)
+      if (/^[-*•]\s/.test(trimmed)) continue        // bullet
+      if (/^\d+\.\s/.test(trimmed)) continue       // numbered list
+      if (/^<[^>]+>/.test(trimmed)) continue         // html tag
+      if (trimmed.length > 80) continue              // ยาวเกิน = paragraph
+      if (/[.,;:!?]$/.test(trimmed)) continue       // จบด้วยเครื่องหมาย = ประโยค
+
+      const prevEmpty = i === 0 || lines[i-1].trim() === ''
+      const nextEmpty = i === lines.length-1 || lines[i+1].trim() === ''
+
+      // ต้องมีบรรทัดว่างอย่างน้อยหนึ่งด้านเพื่อถือว่า "โดดๆ"
+      if (prevEmpty || nextEmpty) {
+        result.push(trimmed)
+      }
     }
   }
 

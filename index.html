@@ -524,7 +524,7 @@
         <div class="category-label">วางบทความ หรือพิมพ์หัวข้อ H2</div>
         <textarea
           id="input-text"
-          placeholder="โหมด A — พิมพ์หัวข้อทีละบรรทัด (เว้นบรรทัดก่อน/หลัง):&#10;&#10;เปิด 2 ฉากทัศน์เศรษฐกิจไทย&#10;&#10;ราคาน้ำมันพุ่ง กระทบค่าครองชีพ&#10;&#10;โหมด B — ตัวหนา **หัวข้อ** บรรทัดเดียว:&#10;**เปิด 2 ฉากทัศน์เศรษฐกิจไทย**&#10;**ราคาน้ำมันพุ่ง กระทบค่าครองชีพ**&#10;&#10;โหมด C — ใช้ ## นำหน้า:&#10;## Apple ประกาศ iPhone 17&#10;&#10;โหมด D — วางบทความเต็ม (ระบบ detect ## หรือ <h2> เอง)"
+          placeholder="แนะนำ — พิมพ์แค่หัวข้อ H2 ทีละบรรทัด (เว้น 1 บรรทัดว่างคั่นแต่ละอัน):&#10;&#10;โดนหางเลขจาก น้ำมันแพง&#10;&#10;ค่าไฟ ตัวมารสามัญประจำบ้าน&#10;&#10;แชร์ 4 เทคนิค WFH&#10;&#10;─────────────────&#10;หรือใช้ ## นำหน้าก็ได้:&#10;## โดนหางเลขจาก น้ำมันแพง&#10;## ค่าไฟ ตัวมารสามัญประจำบ้าน&#10;&#10;─────────────────&#10;หรือวางบทความเต็มที่มี <h2> หรือ ## ระบบจะ detect เอง"
         ></textarea>
       </div>
 
@@ -620,50 +620,73 @@ function extractH2(text) {
   const lines = text.split('\n')
   const result = []
 
-  // โหมด 1: ตรวจว่ามี ## หรือ <h2> ในข้อความไหม
+  // ── กรองบรรทัดที่เป็น noise ออกก่อนทุกโหมด ──
+  function isNoise(str) {
+    if (!str) return true
+    // credit/caption เช่น "ภาพ: xxx", "Photo: xxx", "ที่มา: xxx"
+    if (/^(ภาพ|ภาพประกอบ|photo|image|credit|source|ที่มา|อ้างอิง|ref)\s*:/i.test(str)) return true
+    // Getty / Shutterstock / AP / Reuters ในบรรทัด
+    if (/getty images|shutterstock|alamy|reuters|ap photo|afp/i.test(str)) return true
+    // URL
+    if (/^https?:\/\//i.test(str)) return true
+    // tag HTML อื่นๆ
+    if (/^<[^h][^>]*>/i.test(str)) return true
+    // bullet / numbered list
+    if (/^[-*•]\s/.test(str)) return true
+    if (/^\d+\.\s/.test(str)) return true
+    return false
+  }
+
+  // โหมด A: มี ## หรือ <h2>
   const hasMarkdown = lines.some(l => /^#{1,2}\s+.+/.test(l.trim()))
   const hasHTML     = lines.some(l => /<h2[^>]*>[^<]+<\/h2>/i.test(l.trim()))
-  // โหมด Bold: **หัวข้อ** หรือ <strong>หัวข้อ</strong> โดดๆ
-  const hasBold     = lines.some(l => /^\*\*[^*]+\*\*$/.test(l.trim()) || /^<strong>[^<]+<\/strong>$/.test(l.trim()))
+
+  // โหมด B: มี **bold** หรือ <strong> โดดๆ
+  const hasBold = lines.some(l => /^\*\*[^*]+\*\*$/.test(l.trim()) || /^<strong>[^<]+<\/strong>$/.test(l.trim()))
 
   if (hasMarkdown || hasHTML) {
-    // โหมด Markdown / HTML tag
+    // โหมด A — Markdown / HTML tag
     for (const line of lines) {
       const trimmed = line.trim()
-      const mdMatch   = trimmed.match(/^#{1,2}\s+(.+)$/)
+      const mdMatch = trimmed.match(/^#{1,2}\s+(.+)$/)
       if (mdMatch) { result.push(mdMatch[1].trim()); continue }
       const htmlMatch = trimmed.match(/<h2[^>]*>([^<]+)<\/h2>/i)
       if (htmlMatch) { result.push(htmlMatch[1].trim()); continue }
     }
+
   } else if (hasBold) {
-    // โหมด Bold — **หัวข้อ** หรือ <strong>หัวข้อ</strong> บรรทัดเดียว
+    // โหมด B — Bold บรรทัดเดียว
     for (const line of lines) {
       const trimmed = line.trim()
-      const boldMd  = trimmed.match(/^\*\*([^*]+)\*\*$/)
+      const boldMd   = trimmed.match(/^\*\*([^*]+)\*\*$/)
       if (boldMd) { result.push(boldMd[1].trim()); continue }
       const boldHtml = trimmed.match(/^<strong>([^<]+)<\/strong>$/)
       if (boldHtml) { result.push(boldHtml[1].trim()); continue }
     }
+
   } else {
-    // โหมด Smart plain text:
-    // detect เฉพาะบรรทัดที่ "สั้น + โดดๆ" คือ
-    // - ความยาว ≤ 80 ตัวอักษร
-    // - บรรทัดก่อนหน้า และ/หรือ ถัดไปเป็นบรรทัดว่าง หรือเป็น H2 อื่น
-    // - ไม่ใช่ paragraph (ไม่จบด้วย . หรือ , หรือ ว่าง)
+    // โหมด C — Plain text อัจฉริยะ
+    // หลักการ: H2 จริงต้องผ่านทุกเงื่อนไข
+    // 1. ไม่ใช่ noise (credit, URL, bullet ฯลฯ)
+    // 2. ความยาว 5–100 ตัวอักษร
+    // 3. ไม่จบด้วย . , ; ที่บ่งบอกว่าเป็นประโยคยาว
+    // 4. ไม่มี / ที่บ่งบอก credit เช่น "ภาพ / Getty"
+    // 5. บรรทัดทั้งสองด้านเป็นบรรทัดว่าง (โดดๆ จริงๆ)
+
     for (let i = 0; i < lines.length; i++) {
       const trimmed = lines[i].trim()
       if (!trimmed) continue
-      if (/^[-*•]\s/.test(trimmed)) continue        // bullet
-      if (/^\d+\.\s/.test(trimmed)) continue       // numbered list
-      if (/^<[^>]+>/.test(trimmed)) continue         // html tag
-      if (trimmed.length > 80) continue              // ยาวเกิน = paragraph
-      if (/[.,;:!?]$/.test(trimmed)) continue       // จบด้วยเครื่องหมาย = ประโยค
+      if (isNoise(trimmed)) continue
+      if (trimmed.length < 5 || trimmed.length > 100) continue
+      if (/[.,;]$/.test(trimmed)) continue
+      // มี slash กลางบรรทัด = likely credit "ชื่อ / สำนักข่าว"
+      if (/\s\/\s/.test(trimmed)) continue
 
       const prevEmpty = i === 0 || lines[i-1].trim() === ''
-      const nextEmpty = i === lines.length-1 || lines[i+1].trim() === ''
+      const nextEmpty = i === lines.length - 1 || lines[i+1].trim() === ''
 
-      // ต้องมีบรรทัดว่างอย่างน้อยหนึ่งด้านเพื่อถือว่า "โดดๆ"
-      if (prevEmpty || nextEmpty) {
+      // ต้องมีบรรทัดว่างทั้งสองด้าน (เข้มงวดขึ้น)
+      if (prevEmpty && nextEmpty) {
         result.push(trimmed)
       }
     }

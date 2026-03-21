@@ -743,6 +743,10 @@ function toggleRemove(idx) {
     removedSet.add(idx)
   }
   renderH2Preview(detectedH2, false)
+
+  // re-enable ปุ่ม Generate ถ้ายังมี H2 เหลืออยู่
+  const anyActive = detectedH2.some((_, i) => !removedSet.has(i))
+  document.getElementById('btn-gen').disabled = !anyActive
 }
 
 // ── GENERATE ──────────────────────────────────────────

@@ -561,15 +561,15 @@
         <div class="category-grid" id="cat-grid">
           <button class="cat-btn active" data-cat="TSD" style="--cat-color:#e62227">
             <div class="cat-icon"></div>
-            <span class="cat-name">NEWS</span>
+            <span class="cat-name">TSD</span>
           </button>
           <button class="cat-btn" data-cat="TSD POP" style="--cat-color:#0000ff">
             <div class="cat-icon"></div>
-            <span class="cat-name">POP</span>
+            <span class="cat-name">TSD POP</span>
           </button>
           <button class="cat-btn" data-cat="TSD Wealth" style="--cat-color:#c19380">
             <div class="cat-icon"></div>
-            <span class="cat-name">WEALTH</span>
+            <span class="cat-name">TSD Wealth</span>
           </button>
           <button class="cat-btn" data-cat="LIFE" style="--cat-color:#555">
             <div class="cat-icon"></div>
@@ -577,7 +577,7 @@
           </button>
           <button class="cat-btn" data-cat="TSD SPORT" style="--cat-color:#ffa5f7">
             <div class="cat-icon"></div>
-            <span class="cat-name">SPORT</span>
+            <span class="cat-name">TSD SPORT</span>
           </button>
           <button class="cat-btn" data-cat="The Secret Sauce" style="--cat-color:#ffcd00">
             <div class="cat-icon"></div>
@@ -712,11 +712,14 @@ function extractH2(text) {
            /^<b>[^<]+<\/b>$/.test(t)
   })
 
-  // โหมด C: numbered list "1. หัวข้อ" (ตัวเลขเป็นส่วนหนึ่งของหัวข้อ เก็บไว้ครบ)
-  const hasNumbered = lines.filter(l => /^\d+\.\s+.{3,}/.test(l.trim())).length >= 2
+  // โหมด C: numbered list — เปิดเฉพาะเมื่อบรรทัดที่ไม่ว่างทุกบรรทัดเป็นตัวเลข
+  // (ไม่มี paragraph ยาวๆ ปนอยู่)
+  const nonEmptyLines = lines.filter(l => l.trim())
+  const allNumbered = nonEmptyLines.length >= 2 &&
+    nonEmptyLines.every(l => /^\d+\.\s+.{2,}/.test(l.trim()))
 
   if (hasMarkdown || hasHTML) {
-    // โหมด A — Markdown / HTML tag
+    // โหมด A
     for (const line of lines) {
       const trimmed = line.trim()
       const mdMatch = trimmed.match(/^#{1,2}\s+(.+)$/)
@@ -726,28 +729,24 @@ function extractH2(text) {
     }
 
   } else if (hasBold) {
-    // โหมด B — ตัวหนาโดดๆ (รองรับ copy จาก Google Docs)
-    // **text**, <strong>text</strong>, <b>text</b>
+    // โหมด B
     for (const line of lines) {
       const trimmed = line.trim()
-      // **bold**
-      const boldMd = trimmed.match(/^\*\*([^*]+)\*\*$/)
+      const boldMd     = trimmed.match(/^\*\*([^*]+)\*\*$/)
       if (boldMd && !isNoise(boldMd[1].trim())) { result.push(boldMd[1].trim()); continue }
-      // <strong>text</strong>
       const boldStrong = trimmed.match(/^<strong>([^<]+)<\/strong>$/)
       if (boldStrong && !isNoise(boldStrong[1].trim())) { result.push(boldStrong[1].trim()); continue }
-      // <b>text</b>
-      const boldB = trimmed.match(/^<b>([^<]+)<\/b>$/)
+      const boldB      = trimmed.match(/^<b>([^<]+)<\/b>$/)
       if (boldB && !isNoise(boldB[1].trim())) { result.push(boldB[1].trim()); continue }
     }
 
-  } else if (hasNumbered) {
-    // โหมด C — numbered list เก็บตัวเลขไว้ด้วย เช่น "1. Apple iPhone"
+  } else if (allNumbered) {
+    // โหมด C — เฉพาะตอนที่ทุกบรรทัดเป็น numbered list ล้วนๆ
+    // เก็บตัวเลขไว้ด้วย เช่น "1. Apple iPhone"
     for (const line of lines) {
       const trimmed = line.trim()
       const numMatch = trimmed.match(/^(\d+\.\s+.+)$/)
       if (numMatch && !isNoise(numMatch[1].trim())) {
-        // เก็บทั้งหมดรวมตัวเลข เช่น "1. Apple iPhone"
         result.push(numMatch[1].trim())
       }
     }
@@ -761,6 +760,8 @@ function extractH2(text) {
       if (isNoise(trimmed)) continue
       if (trimmed.length < 5 || trimmed.length > 100) continue
       if (/[.,;]$/.test(trimmed)) continue
+      // ถ้าบรรทัดขึ้นต้นด้วยตัวเลข ให้ข้ามไป (เป็น list item ในเนื้อหา)
+      if (/^\d+[.)\s]/.test(trimmed)) continue
 
       const prevEmpty = i === 0 || lines[i-1].trim() === ''
       const nextEmpty = i === lines.length - 1 || lines[i+1].trim() === ''

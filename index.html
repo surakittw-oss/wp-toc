@@ -655,7 +655,7 @@ function buildH2Output(headings, cat) {
   const style = STYLES[cat]
   return headings.map((h, i) =>
     `<h2 id="section${i+1}" style="${style}">${h}</h2>`
-  ).join('\n')
+  ).join('\n\n')
 }
 
 function buildTOCOutput(headings) {

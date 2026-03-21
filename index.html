@@ -239,6 +239,27 @@
     background: rgba(255,255,255,0.05);
     border-radius: 4px;
   }
+  .h2-chip.removed {
+    opacity: 0.25;
+    text-decoration: line-through;
+    border-color: transparent;
+    background: transparent;
+  }
+  .btn-remove {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .btn-remove:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+  .h2-chip.removed .btn-remove { border-color: var(--border); color: var(--border); }
 
   /* ── GENERATE BUTTON ── */
   .btn-generate {
@@ -590,6 +611,7 @@ const STYLES = {
 // ── STATE ──────────────────────────────────────────────
 let selectedCat = 'TSD'
 let detectedH2  = []
+let removedSet  = new Set()   // index ของ H2 ที่กาทิ้ง
 let outputs     = { h2: '', toc: '' }
 let activeTab   = 'h2'
 
@@ -681,12 +703,15 @@ ${items}
 }
 
 // ── RENDER DETECTED H2 ────────────────────────────────
-function renderH2Preview(headings) {
+function renderH2Preview(headings, resetRemoved = true) {
   const list = document.getElementById('h2-list')
   const preview = document.getElementById('h2-preview')
   const count = document.getElementById('h2-count')
 
-  count.textContent = headings.length + ' H2 detected'
+  if (resetRemoved) removedSet.clear()
+
+  const active = headings.filter((_, i) => !removedSet.has(i)).length
+  count.textContent = headings.length + ' H2 detected' + (removedSet.size > 0 ? ` · ${active} เลือกอยู่` : '')
 
   if (headings.length === 0) {
     preview.style.display = 'none'
@@ -695,23 +720,41 @@ function renderH2Preview(headings) {
   }
 
   list.innerHTML = headings.map((h, i) => `
-    <div class="h2-chip">
+    <div class="h2-chip ${removedSet.has(i) ? 'removed' : ''}" id="chip-${i}">
       <span class="h2-num">${String(i+1).padStart(2,'0')}</span>
       <span class="h2-text">${escHtml(h)}</span>
-      <span class="h2-id">section${i+1}</span>
+      <span class="h2-id">${removedSet.has(i) ? 'ข้าม' : 'section' + (i+1)}</span>
+      <button class="btn-remove" onclick="toggleRemove(${i})" title="${removedSet.has(i) ? 'เพิ่มกลับ' : 'ข้ามหัวข้อนี้'}">
+        ${removedSet.has(i) ? '+' : '✕'}
+      </button>
     </div>
   `).join('')
 
   preview.style.display = 'block'
-  document.getElementById('btn-gen').disabled = false
+  const anyActive = headings.some((_, i) => !removedSet.has(i))
+  document.getElementById('btn-gen').disabled = !anyActive
+}
+
+// ── TOGGLE REMOVE ─────────────────────────────────────
+function toggleRemove(idx) {
+  if (removedSet.has(idx)) {
+    removedSet.delete(idx)
+  } else {
+    removedSet.add(idx)
+  }
+  renderH2Preview(detectedH2, false)
 }
 
 // ── GENERATE ──────────────────────────────────────────
 function generate() {
   if (detectedH2.length === 0) return
 
-  outputs.h2  = buildH2Output(detectedH2, selectedCat)
-  outputs.toc = buildTOCOutput(detectedH2)
+  // กรองเฉพาะ H2 ที่ไม่ได้กาทิ้ง
+  const activeH2 = detectedH2.filter((_, i) => !removedSet.has(i))
+  if (activeH2.length === 0) return
+
+  outputs.h2  = buildH2Output(activeH2, selectedCat)
+  outputs.toc = buildTOCOutput(activeH2)
 
   // Show tabs + output
   document.getElementById('empty-state').style.display = 'none'
@@ -807,7 +850,8 @@ function escHtml(str) {
 // ── EVENT LISTENERS ───────────────────────────────────
 document.getElementById('input-text').addEventListener('input', function() {
   detectedH2 = extractH2(this.value)
-  renderH2Preview(detectedH2)
+  removedSet.clear()
+  renderH2Preview(detectedH2, true)
 })
 
 document.getElementById('btn-gen').addEventListener('click', generate)

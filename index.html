@@ -383,7 +383,7 @@
   }
   .code-output {
     flex: 1;
-    min-height: 380px;
+    min-height: clamp(200px, 35vh, 380px);
     padding: 16px;
     background: rgba(255,255,255,0.02);
     border: 1px solid var(--border);
@@ -648,6 +648,110 @@
     margin-top: 1px;
     flex-shrink: 0;
   }
+
+  /* ── RESPONSIVE ──────────────────────────────────────── */
+
+  /* Tablet: ≤1024px — stack panels vertically */
+  @media (max-width: 1024px) {
+    main {
+      grid-template-columns: 1fr;
+      padding: 20px;
+      gap: 16px;
+    }
+    .btn-gen-grid {
+      grid-template-columns: 1fr;
+    }
+    .btn-gen-left {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .color-presets { flex-wrap: wrap; }
+  }
+
+  /* Mobile: ≤768px */
+  @media (max-width: 768px) {
+    header {
+      padding: 14px 16px;
+    }
+    .logo-tag { display: none; }
+
+    main {
+      padding: 12px;
+      gap: 12px;
+    }
+
+    .panel-header {
+      padding: 12px 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .panel-body {
+      padding: 14px;
+      gap: 12px;
+    }
+
+    .category-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .tab-row { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tab { white-space: nowrap; padding: 10px 14px; font-size: 11px; }
+
+    .code-output { min-height: 220px; font-size: 11px; }
+
+    .btn-generate { padding: 12px; font-size: 12px; }
+
+    .status-bar { padding: 6px 14px; font-size: 9px; }
+
+    footer {
+      padding: 12px 16px;
+      flex-direction: column;
+      gap: 4px;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    /* Button Generator responsive */
+    .btn-gen-section { padding: 0 12px 20px; }
+    .btn-gen-left, .btn-gen-right { padding: 14px; }
+    .radius-row { flex-wrap: wrap; }
+    .radius-btn { min-width: 60px; }
+
+    .field-input { font-size: 14px; padding: 9px 10px; }
+    .btn-gen-action { padding: 11px; font-size: 12px; }
+    .btn-preview-wrap { min-height: 56px; padding: 14px 10px; }
+    .code-out-btn { font-size: 10.5px; padding: 11px; min-height: 60px; }
+  }
+
+  /* Small mobile: ≤480px */
+  @media (max-width: 480px) {
+    .category-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .cat-btn { padding: 8px 6px; }
+    .cat-name { font-size: 10px; }
+
+    .h2-chip { padding: 7px 10px; }
+    .h2-text { font-size: 11px; }
+
+    textarea { min-height: 200px; font-size: 13px; }
+
+    .panel-title { font-size: 10px; letter-spacing: 1.5px; }
+
+    .rcard-body .fval, .rcard-body .fval.meta { font-size: 11.5px; }
+
+    .toast { right: 12px; bottom: 12px; font-size: 12px; padding: 10px 14px; }
+  }
+
+  /* Very small: ≤360px */
+  @media (max-width: 360px) {
+    main { padding: 8px; gap: 8px; }
+    .category-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .panel-body { padding: 10px; gap: 10px; }
+    header { padding: 12px; }
+  }
+
 </style>
 </head>
 <body>
@@ -711,6 +815,7 @@
         <div class="category-label">วางบทความ หรือพิมพ์หัวข้อ H2</div>
         <textarea
           id="input-text"
+          style="min-height:clamp(160px, 30vh, 320px)"
           placeholder="วิธีที่ 1 — ตัวเลข + หัวข้อ (ตัวเลขจะอยู่ใน H2 ด้วย):&#10;1. Apple iPhone 17 มีอะไรใหม่&#10;2. ราคาและวันวางจำหน่าย&#10;3. เปรียบเทียบกับ Android&#10;&#10;วิธีที่ 2 — ตัวหนาโดดๆ (copy จาก Google Docs ได้เลย):&#10;**Apple iPhone 17 มีอะไรใหม่**&#10;**ราคาและวันวางจำหน่าย**&#10;&#10;วิธีที่ 3 — ใช้ ## นำหน้า:&#10;## Apple iPhone 17 มีอะไรใหม่&#10;&#10;วิธีที่ 4 — วางบทความเต็มที่มี <h2> ระบบ detect เอง"
         ></textarea>
       </div>

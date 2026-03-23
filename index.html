@@ -1431,7 +1431,7 @@ function previewBtn() {
   prev.style.cssText = style + ' cursor:pointer;'
 
   // update code
-  const code = `<a style="${style}" href="${url}" target="_blank" rel="noopener noreferrer"> ${text}</a>`
+  const code = `<a style="${style}" href="${url.trim()}" target="_blank" rel="noopener noreferrer">${text}</a>`
   document.getElementById('btn-code-out').textContent = code
 }
 
@@ -1478,7 +1478,7 @@ function copyBtnCode() {
   const text = document.getElementById('btn-text').value || 'คลิก ›'
   const url  = document.getElementById('btn-url').value || ''
   const style = getBtnStyle()
-  const code = `<a style="${style}" href="${url}" target="_blank" rel="noopener noreferrer"> ${text}</a>`
+  const code = `<a style="${style}" href="${url.trim()}" target="_blank" rel="noopener noreferrer">${text}</a>`
   navigator.clipboard.writeText(code).then(() => showToast('Copied Button Code แล้ว!'))
 }
 

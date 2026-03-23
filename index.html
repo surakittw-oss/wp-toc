@@ -445,6 +445,126 @@
   }
 
   /* ── FOOTER ── */
+  /* ── BUTTON GENERATOR ── */
+  .btn-gen-section {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 32px 32px;
+  }
+  .btn-gen-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .btn-gen-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .btn-gen-left {
+    padding: 20px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .btn-gen-right {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-label-sm {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field-input {
+    padding: 9px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .field-input:focus { border-color: #444; }
+  .field-input::placeholder { color: var(--muted); }
+  .color-row { display: flex; gap: 8px; align-items: center; }
+  .color-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+  .color-dot {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .color-dot:hover { transform: scale(1.15); }
+  .color-dot.active { border-color: white; transform: scale(1.15); }
+  input[type="color"] {
+    width: 32px; height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+  }
+  .btn-preview-wrap {
+    padding: 20px 16px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 70px;
+  }
+  .code-out-btn {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: #ccc;
+    white-space: normal;
+    word-break: break-all;
+    line-height: 1.7;
+    flex: 1;
+    min-height: 80px;
+  }
+  .btn-gen-action {
+    width: 100%;
+    padding: 11px;
+    background: var(--red);
+    border: none; border-radius: 8px;
+    color: white;
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  .btn-gen-action:hover { background: #c91e23; transform: translateY(-1px); }
+  .radius-row { display: flex; gap: 8px; }
+  .radius-btn {
+    flex: 1; padding: 7px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--sub);
+    font-size: 11px; font-family: var(--sans);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .radius-btn:hover { border-color: #444; color: var(--text); }
+  .radius-btn.active { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
   footer {
     border-top: 1px solid var(--border);
     padding: 14px 32px;
@@ -654,6 +774,108 @@
   </div>
 
 </main>
+
+<!-- BUTTON GENERATOR -->
+<div class="btn-gen-section">
+  <div class="btn-gen-wrap">
+    <div class="panel-header">
+      <span class="panel-title">Button Generator</span>
+      <span style="font-size:11px; color:var(--muted); font-family:var(--mono)">สร้างปุ่ม HTML สำหรับ WordPress</span>
+    </div>
+    <div class="btn-gen-grid">
+
+      <!-- LEFT: INPUTS -->
+      <div class="btn-gen-left">
+
+        <div class="field-group">
+          <span class="field-label-sm">ข้อความบนปุ่ม</span>
+          <input class="field-input" id="btn-text" type="text" placeholder="คลิก ›" value="คลิก ›" oninput="previewBtn()">
+        </div>
+
+        <div class="field-group">
+          <span class="field-label-sm">URL ลิงก์</span>
+          <input class="field-input" id="btn-url" type="text" placeholder="https://..." oninput="previewBtn()">
+        </div>
+
+        <div class="field-group">
+          <span class="field-label-sm">สีปุ่ม</span>
+          <div class="color-row">
+            <div class="color-presets" id="color-presets">
+              <div class="color-dot active" style="background:#e62227" data-color="#e62227" onclick="setColor('#e62227', this)" title="TSD Red"></div>
+              <div class="color-dot" style="background:#0000ff" data-color="#0000ff" onclick="setColor('#0000ff', this)" title="TSD POP Blue"></div>
+              <div class="color-dot" style="background:#c19380" data-color="#c19380" onclick="setColor('#c19380', this)" title="TSD Wealth"></div>
+              <div class="color-dot" style="background:#000000; border:1px solid #444" data-color="#000000" onclick="setColor('#000000', this)" title="LIFE Black"></div>
+              <div class="color-dot" style="background:#ffa5f7" data-color="#ffa5f7" onclick="setColor('#ffa5f7', this)" title="TSD SPORT"></div>
+              <div class="color-dot" style="background:#ffcd00" data-color="#ffcd00" onclick="setColor('#ffcd00', this)" title="Secret Sauce"></div>
+              <div class="color-dot" style="background:#22c55e" data-color="#22c55e" onclick="setColor('#22c55e', this)" title="Green"></div>
+              <div class="color-dot" style="background:#3b82f6" data-color="#3b82f6" onclick="setColor('#3b82f6', this)" title="Blue"></div>
+            </div>
+            <input type="color" id="btn-color-picker" value="#e62227" oninput="setColorCustom(this.value)" title="Custom color">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <span class="field-label-sm">สีข้อความ</span>
+          <div class="color-row">
+            <div class="color-presets" id="text-color-presets">
+              <div class="color-dot active" style="background:#ffffff; border:1px solid #444" data-color="#ffffff" onclick="setTextColor('#ffffff', this)" title="White"></div>
+              <div class="color-dot" style="background:#000000; border:1px solid #444" data-color="#000000" onclick="setTextColor('#000000', this)" title="Black"></div>
+              <div class="color-dot" style="background:#e62227" data-color="#e62227" onclick="setTextColor('#e62227', this)" title="Red"></div>
+              <div class="color-dot" style="background:#ffcd00" data-color="#ffcd00" onclick="setTextColor('#ffcd00', this)" title="Yellow"></div>
+            </div>
+            <input type="color" id="text-color-picker" value="#ffffff" oninput="setTextColorCustom(this.value)" title="Custom text color">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <span class="field-label-sm">ขนาดตัวอักษร (px)</span>
+          <input class="field-input" id="btn-size" type="number" value="15" min="10" max="32" oninput="previewBtn()">
+        </div>
+
+        <div class="field-group">
+          <span class="field-label-sm">ความโค้งมุม</span>
+          <div class="radius-row">
+            <button class="radius-btn" onclick="setRadius('4px', this)">เหลี่ยม</button>
+            <button class="radius-btn" onclick="setRadius('8px', this)">มน</button>
+            <button class="radius-btn active" onclick="setRadius('980px', this)">กลม</button>
+            <button class="radius-btn" onclick="setRadius('0px', this)">ตรง</button>
+          </div>
+        </div>
+
+        <button class="btn-gen-action" onclick="copyBtnCode()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Code
+        </button>
+
+      </div>
+
+      <!-- RIGHT: PREVIEW + CODE -->
+      <div class="btn-gen-right">
+        <div>
+          <div class="field-label-sm" style="margin-bottom:8px">Preview</div>
+          <div class="btn-preview-wrap" id="btn-preview-wrap">
+            <a id="btn-preview"
+              style="display:inline-block; padding:7px 14px; font-size:15px; color:#fff; background:#e62227; border-radius:980px; text-decoration:none; font-weight:500;"
+              href="#" target="_blank" rel="noopener noreferrer"
+              onclick="return false">คลิก ›</a>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px; flex:1">
+          <div class="field-label-sm">HTML Code</div>
+          <div class="code-out-btn" id="btn-code-out">
+            &lt;a style="display: inline-block; padding: 7px 14px; font-size: 15px; color: #fff; background: #e62227; border-radius: 980px; text-decoration: none; font-weight: 500;" href="" target="_blank" rel="noopener noreferrer"&gt; คลิก ›&lt;/a&gt;
+          </div>
+        </div>
+
+        <div style="font-size:11px; color:var(--muted);">
+          ใส่ลิงก์ → แก้ข้อความ → Copy Code → วางใน Classic Editor (Text mode)
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <!-- FOOTER -->
 <footer>
@@ -1082,6 +1304,81 @@ document.getElementById('cat-grid').addEventListener('click', function(e) {
   btn.classList.add('active')
   selectedCat = btn.dataset.cat
 })
+
+// ── BUTTON GENERATOR ──────────────────────────────────
+let btnColor    = '#e62227'
+let btnTextColor = '#ffffff'
+let btnRadius   = '980px'
+
+function getBtnStyle() {
+  const size = document.getElementById('btn-size').value || 15
+  return `display: inline-block; padding: 7px 14px; font-size: ${size}px; color: ${btnTextColor}; background: ${btnColor}; border-radius: ${btnRadius}; text-decoration: none; font-weight: 500;`
+}
+
+function previewBtn() {
+  const text = document.getElementById('btn-text').value || 'คลิก ›'
+  const url  = document.getElementById('btn-url').value || '#'
+  const style = getBtnStyle()
+
+  // update preview
+  const prev = document.getElementById('btn-preview')
+  prev.textContent = text
+  prev.style.cssText = style + ' cursor:pointer;'
+
+  // update code
+  const code = `<a style="${style}" href="${url}" target="_blank" rel="noopener noreferrer"> ${text}</a>`
+  document.getElementById('btn-code-out').textContent = code
+}
+
+function setColor(hex, el) {
+  btnColor = hex
+  document.getElementById('btn-color-picker').value = hex
+  document.querySelectorAll('#color-presets .color-dot').forEach(d => d.classList.remove('active'))
+  if (el) el.classList.add('active')
+  previewBtn()
+}
+
+function setColorCustom(hex) {
+  btnColor = hex
+  document.querySelectorAll('#color-presets .color-dot').forEach(d => {
+    d.classList.toggle('active', d.dataset.color === hex)
+  })
+  previewBtn()
+}
+
+function setTextColor(hex, el) {
+  btnTextColor = hex
+  document.getElementById('text-color-picker').value = hex
+  document.querySelectorAll('#text-color-presets .color-dot').forEach(d => d.classList.remove('active'))
+  if (el) el.classList.add('active')
+  previewBtn()
+}
+
+function setTextColorCustom(hex) {
+  btnTextColor = hex
+  document.querySelectorAll('#text-color-presets .color-dot').forEach(d => {
+    d.classList.toggle('active', d.dataset.color === hex)
+  })
+  previewBtn()
+}
+
+function setRadius(r, el) {
+  btnRadius = r
+  document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'))
+  if (el) el.classList.add('active')
+  previewBtn()
+}
+
+function copyBtnCode() {
+  const text = document.getElementById('btn-text').value || 'คลิก ›'
+  const url  = document.getElementById('btn-url').value || ''
+  const style = getBtnStyle()
+  const code = `<a style="${style}" href="${url}" target="_blank" rel="noopener noreferrer"> ${text}</a>`
+  navigator.clipboard.writeText(code).then(() => showToast('Copied Button Code แล้ว!'))
+}
+
+// init preview
+previewBtn()
 </script>
 </body>
 </html>

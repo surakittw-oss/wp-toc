@@ -459,6 +459,8 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text = text.replace(new RegExp(`^\\*\\*${esc}\\*\\*\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<strong>${esc}<\\/strong>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<b>${esc}<\\/b>\\s*$`,'gm'),tag)
+    // <h2><b>text</b></h2> และ <h2><strong>text</strong></h2> (รองรับ space ก่อน closing tag)
+    text = text.replace(new RegExp(`^<h2[^>]*><(?:b|strong)[^>]*>\\s*${esc}\\s*<\/(?:b|strong)>\\s*<\/h2>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^\\d+\\.\\s+${esc}\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^${esc}\\s*$`,'gm'),tag)
   })

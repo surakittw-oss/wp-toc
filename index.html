@@ -1141,14 +1141,33 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   const style = STYLES[cat]
 
   // ── ตรวจว่า input เป็น HTML หรือ plain text ──
-  const isHTML = /<(span|p|div|strong|b|h[1-6]|ul|li|br|img|figure|picture)\s*[^>]*>/i.test(originalText)
+  const isHTML = /<(span|p|div|strong|b|h[1-6]|ul|li|br|img|figure|picture|iframe)\s*[^>]*>/i.test(originalText)
 
   let text = originalText
 
-  // ── แทนที่ H2 ด้วย placeholder ก่อน เพื่อป้องกัน regex ชนกัน ──
+  // ── Step 1: ซ่อน img และ iframe ด้วย placeholder ก่อน ──
+  // เพื่อป้องกันไม่ให้ถูก replace หรือ wrap โดยขั้นตอนอื่น
+  const mediaMap = {}
+  let mediaIdx = 0
+
+  // ซ่อน <iframe ...>...</iframe> (multi-line)
+  text = text.replace(/<iframe[\s\S]*?<\/iframe>/gi, (match) => {
+    const key = `%%MEDIA_${mediaIdx++}%%`
+    mediaMap[key] = match
+    return key
+  })
+
+  // ซ่อน <img ...> และ <img ... /> (self-closing, single line)
+  text = text.replace(/<img[^>]*\/?>/gi, (match) => {
+    const key = `%%MEDIA_${mediaIdx++}%%`
+    mediaMap[key] = match
+    return key
+  })
+
+  // ── Step 2: แทนที่ H2 ด้วย placeholder ──
   activeHeadings.forEach((h, i) => {
     const sectionId = `section${i + 1}`
-    const newTag = `%%H2_${i+1}_START%%<h2 id="${sectionId}" style="${style}">${h}</h2>%%H2_${i+1}_END%%`
+    const newTag = `%%H2_${i+1}%%<h2 id="${sectionId}" style="${style}">${h}</h2>%%H2_${i+1}_END%%`
     const esc = h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     text = text.replace(new RegExp(`^#{1,2}\\s+${esc}\\s*$`, 'gm'), newTag)
     text = text.replace(new RegExp(`^\\*\\*${esc}\\*\\*\\s*$`, 'gm'), newTag)
@@ -1158,9 +1177,9 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text = text.replace(new RegExp(`^${esc}\\s*$`, 'gm'), newTag)
   })
 
+  // ── Step 3: จัด paragraph ตาม mode ──
   if (!isHTML) {
-    // ── Plain text mode ──
-    // แบ่งเป็น blocks ด้วยบรรทัดว่าง แต่ละ block คือ paragraph หรือรูป
+    // Plain text mode — แบ่ง block ด้วยบรรทัดว่าง
     const blocks = text.split(/\n\s*\n/)
     const processed = []
 
@@ -1169,21 +1188,19 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
       if (!trimmed) continue
 
       if (trimmed.startsWith('%%H2_')) {
-        // H2 placeholder
-        const h2tag = trimmed.replace(/%%H2_\d+_START%%/, '').replace(/%%H2_\d+_END%%/, '')
+        const h2tag = trimmed.replace(/%%H2_\d+%%/, '').replace(/%%H2_\d+_END%%/, '')
         processed.push('&nbsp;')
         processed.push(h2tag)
         processed.push('&nbsp;')
-      } else if (/<img\s|<figure|<picture|<video|<iframe/i.test(trimmed)) {
-        // รูปภาพ — คงไว้ตำแหน่งเดิม ไม่ wrap
+      } else if (trimmed.startsWith('%%MEDIA_')) {
+        // media placeholder — จะถูก restore ทีหลัง
+        processed.push('&nbsp;')
         processed.push(trimmed)
         processed.push('&nbsp;')
       } else if (/^<[^>]+>/.test(trimmed)) {
-        // HTML อื่นๆ — เก็บไว้เดิม
         processed.push(trimmed)
         processed.push('&nbsp;')
       } else {
-        // paragraph ธรรมดา — รวมบรรทัดแล้ว wrap span
         const combined = trimmed.split('\n').map(l => l.trim()).filter(Boolean).join(' ')
         processed.push(`<span style="font-weight: 400;">${combined}</span>`)
         processed.push('&nbsp;')
@@ -1192,20 +1209,22 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text = processed.join('\n')
 
   } else {
-    // ── HTML mode — คง img/iframe ไว้ตำแหน่งเดิม ──
-    // 1. replace H2 placeholder + &nbsp; คั่น
-    text = text.replace(/%%H2_(\d+)_START%%(<h2[^>]+>[^<]*<\/h2>)%%H2_\d+_END%%/g,
+    // HTML mode — replace H2 placeholder กลับ + &nbsp; คั่น
+    text = text.replace(/%%H2_(\d+)%%(<h2[^>]+>[^<]*<\/h2>)%%H2_\d+_END%%/g,
       '&nbsp;\n$2\n&nbsp;')
 
-    // 2. ตรวจสอบว่า img/iframe มี &nbsp; คั่นก่อน-หลังหรือยัง ถ้าไม่มีให้เพิ่ม
-    // (เพื่อให้ spacing สม่ำเสมอกับ paragraph อื่นๆ)
-    text = text.replace(/(<img\s[^>]*>)/gi, '\n&nbsp;\n$1\n&nbsp;\n')
-    text = text.replace(/(<iframe[^>]*>[\s\S]*?<\/iframe>)/gi, '\n&nbsp;\n$1\n&nbsp;\n')
-    // ลบ &nbsp; ซ้ำที่อาจเกิดขึ้น
+    // เพิ่ม &nbsp; รอบ media placeholder ใน HTML mode
+    text = text.replace(/(%%MEDIA_\d+%%)/g, '\n&nbsp;\n$1\n&nbsp;\n')
+    // ลบ &nbsp; ซ้ำ
     text = text.replace(/(&nbsp;\n){3,}/g, '&nbsp;\n&nbsp;\n')
   }
 
-  // ── แทรก TOC หลังย่อหน้าแรก (ข้ามรูปภาพที่อยู่บนสุด) ──
+  // ── Step 4: Restore img และ iframe กลับตำแหน่งเดิม ──
+  for (const [key, val] of Object.entries(mediaMap)) {
+    text = text.split(key).join(val)
+  }
+
+  // ── Step 5: แทรก TOC หลังย่อหน้าแรก ──
   const lines = text.split('\n')
   let insertIdx = lines.length
   let hasContent = false
@@ -1213,19 +1232,38 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   for (let i = 0; i < lines.length; i++) {
     const t = lines[i].trim()
 
-    // ข้ามรูปภาพที่อยู่ก่อน paragraph แรก
-    if (/<img\s|<figure|<picture/i.test(t)) continue
+    // ข้ามบรรทัดที่เป็น media หรือ empty
+    if (!t || t === '&nbsp;') continue
+    if (/<img\s|<figure|<picture|<iframe/i.test(t)) continue
+    if (t.startsWith('%%MEDIA_')) continue
 
-    const isContent = t &&
-      t !== '&nbsp;' &&
-      !t.startsWith('<h2 ') &&
-      !t.startsWith('%%')
+    const isContent = !t.startsWith('<h2 ') && !t.startsWith('%%H2_')
 
     if (isContent) {
       hasContent = true
-    } else if (hasContent && (!t || t === '&nbsp;')) {
-      insertIdx = i + 1
+    } else if (hasContent) {
+      insertIdx = i
       break
+    }
+  }
+
+  // หาตำแหน่งหลัง content แรก (หลัง &nbsp; ถัดจาก paragraph แรก)
+  if (hasContent) {
+    for (let i = 0; i < lines.length; i++) {
+      const t = lines[i].trim()
+      if (!t || t === '&nbsp;') continue
+      if (/<img\s|<figure|<picture|<iframe/i.test(t)) continue
+      if (t.startsWith('%%MEDIA_')) continue
+      if (!t.startsWith('<h2 ') && !t.startsWith('%%H2_')) {
+        // หาบรรทัดว่างถัดจาก content นี้
+        for (let j = i + 1; j < lines.length; j++) {
+          if (!lines[j].trim() || lines[j].trim() === '&nbsp;') {
+            insertIdx = j + 1
+            break
+          }
+        }
+        break
+      }
     }
   }
 

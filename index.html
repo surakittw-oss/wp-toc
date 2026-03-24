@@ -1192,10 +1192,17 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text = processed.join('\n')
 
   } else {
-    // ── HTML mode — คงทุกอย่างไว้เหมือนเดิม รวมถึงรูปภาพ ──
-    // แค่ replace H2 placeholder + เพิ่ม &nbsp; คั่น
+    // ── HTML mode — คง img/iframe ไว้ตำแหน่งเดิม ──
+    // 1. replace H2 placeholder + &nbsp; คั่น
     text = text.replace(/%%H2_(\d+)_START%%(<h2[^>]+>[^<]*<\/h2>)%%H2_\d+_END%%/g,
       '&nbsp;\n$2\n&nbsp;')
+
+    // 2. ตรวจสอบว่า img/iframe มี &nbsp; คั่นก่อน-หลังหรือยัง ถ้าไม่มีให้เพิ่ม
+    // (เพื่อให้ spacing สม่ำเสมอกับ paragraph อื่นๆ)
+    text = text.replace(/(<img\s[^>]*>)/gi, '\n&nbsp;\n$1\n&nbsp;\n')
+    text = text.replace(/(<iframe[^>]*>[\s\S]*?<\/iframe>)/gi, '\n&nbsp;\n$1\n&nbsp;\n')
+    // ลบ &nbsp; ซ้ำที่อาจเกิดขึ้น
+    text = text.replace(/(&nbsp;\n){3,}/g, '&nbsp;\n&nbsp;\n')
   }
 
   // ── แทรก TOC หลังย่อหน้าแรก (ข้ามรูปภาพที่อยู่บนสุด) ──

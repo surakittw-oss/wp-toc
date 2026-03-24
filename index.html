@@ -783,25 +783,25 @@
       <div>
         <div class="category-label">เลือกหมวดข่าว</div>
         <div class="category-grid" id="cat-grid">
-          <button class="cat-btn active" data-cat="TSD" style="--cat-color:#e62227">
+          <button class="cat-btn active" data-cat="NEWS" style="--cat-color:#e62227">
             <div class="cat-icon"></div>
-            <span class="cat-name">TSD</span>
+            <span class="cat-name">NEWS</span>
           </button>
-          <button class="cat-btn" data-cat="TSD POP" style="--cat-color:#0000ff">
+          <button class="cat-btn" data-cat="POP" style="--cat-color:#0000ff">
             <div class="cat-icon"></div>
-            <span class="cat-name">TSD POP</span>
+            <span class="cat-name">POP</span>
           </button>
-          <button class="cat-btn" data-cat="TSD Wealth" style="--cat-color:#c19380">
+          <button class="cat-btn" data-cat="WEALTH" style="--cat-color:#c19380">
             <div class="cat-icon"></div>
-            <span class="cat-name">TSD Wealth</span>
+            <span class="cat-name">WEALTH</span>
           </button>
           <button class="cat-btn" data-cat="LIFE" style="--cat-color:#555">
             <div class="cat-icon"></div>
             <span class="cat-name">LIFE</span>
           </button>
-          <button class="cat-btn" data-cat="TSD SPORT" style="--cat-color:#ffa5f7">
+          <button class="cat-btn" data-cat="SPORT" style="--cat-color:#ffa5f7">
             <div class="cat-icon"></div>
-            <span class="cat-name">TSD SPORT</span>
+            <span class="cat-name">SPORT</span>
           </button>
           <button class="cat-btn" data-cat="The Secret Sauce" style="--cat-color:#ffcd00">
             <div class="cat-icon"></div>
@@ -906,11 +906,11 @@
           <span class="field-label-sm">สีปุ่ม</span>
           <div class="color-row">
             <div class="color-presets" id="color-presets">
-              <div class="color-dot active" style="background:#e62227" data-color="#e62227" onclick="setColor('#e62227', this)" title="TSD Red"></div>
-              <div class="color-dot" style="background:#0000ff" data-color="#0000ff" onclick="setColor('#0000ff', this)" title="TSD POP Blue"></div>
-              <div class="color-dot" style="background:#c19380" data-color="#c19380" onclick="setColor('#c19380', this)" title="TSD Wealth"></div>
+              <div class="color-dot active" style="background:#e62227" data-color="#e62227" onclick="setColor('#e62227', this)" title="NEWS Red"></div>
+              <div class="color-dot" style="background:#0000ff" data-color="#0000ff" onclick="setColor('#0000ff', this)" title="POP Blue"></div>
+              <div class="color-dot" style="background:#c19380" data-color="#c19380" onclick="setColor('#c19380', this)" title="WEALTH"></div>
               <div class="color-dot" style="background:#000000; border:1px solid #444" data-color="#000000" onclick="setColor('#000000', this)" title="LIFE Black"></div>
-              <div class="color-dot" style="background:#ffa5f7" data-color="#ffa5f7" onclick="setColor('#ffa5f7', this)" title="TSD SPORT"></div>
+              <div class="color-dot" style="background:#ffa5f7" data-color="#ffa5f7" onclick="setColor('#ffa5f7', this)" title="SPORT"></div>
               <div class="color-dot" style="background:#ffcd00" data-color="#ffcd00" onclick="setColor('#ffcd00', this)" title="Secret Sauce"></div>
               <div class="color-dot" style="background:#22c55e" data-color="#22c55e" onclick="setColor('#22c55e', this)" title="Green"></div>
               <div class="color-dot" style="background:#3b82f6" data-color="#3b82f6" onclick="setColor('#3b82f6', this)" title="Blue"></div>
@@ -997,16 +997,16 @@
 <script>
 // ── STYLE MAP ──────────────────────────────────────────
 const STYLES = {
-  'TSD':              'border-left: 12px solid #e62227; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
-  'TSD POP':          'border-left: 12px solid #0000ff; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
-  'TSD Wealth':       'border-left: 12px solid #c19380; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
+  'NEWS':             'border-left: 12px solid #e62227; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
+  'POP':              'border-left: 12px solid #0000ff; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
+  'WEALTH':           'border-left: 12px solid #c19380; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
   'LIFE':             'border-left: 12px solid #000000; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
-  'TSD SPORT':        'border-left: 12px solid #ffa5f7; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
+  'SPORT':            'border-left: 12px solid #ffa5f7; padding-left: 15px; background-color: #F8F8F8; padding: 10px;',
   'The Secret Sauce': 'border-left: 13px solid #ffcd00; padding-left: 15px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 10px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); color: #000;'
 }
 
 // ── STATE ──────────────────────────────────────────────
-let selectedCat = 'TSD'
+let selectedCat = 'NEWS'
 let detectedH2  = []
 let removedSet  = new Set()   // index ของ H2 ที่กาทิ้ง
 let outputs     = { h2: '', toc: '', full: '' }
@@ -1022,7 +1022,9 @@ function extractH2(text) {
     if (/^(ภาพ|ภาพประกอบ|photo|image|credit|source|ที่มา|อ้างอิง|ref)\s*:/i.test(str)) return true
     if (/getty images|shutterstock|alamy|reuters|ap photo|afp/i.test(str)) return true
     if (/^https?:\/\//i.test(str)) return true
-    if (/^<[^h][^>]*>/i.test(str)) return true
+    // กรอง HTML tags ที่ไม่ใช่ H2 รวมถึง img, figure, picture, video, iframe
+    if (/^<(img|figure|picture|video|iframe|source|caption|div|span|p|ul|ol|li|br|a|strong|em|table|tr|td|th)\b/i.test(str)) return true
+    if (/^<\//.test(str)) return true  // closing tags
     if (/\s\/\s/.test(str)) return true
     return false
   }
@@ -1139,16 +1141,15 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   const style = STYLES[cat]
 
   // ── ตรวจว่า input เป็น HTML หรือ plain text ──
-  const isHTML = /<(span|p|div|strong|b|h[1-6]|ul|li|br)\s*[^>]*>/i.test(originalText)
+  const isHTML = /<(span|p|div|strong|b|h[1-6]|ul|li|br|img|figure|picture)\s*[^>]*>/i.test(originalText)
 
   let text = originalText
 
-  // ── แทนที่ H2 ทุกรูปแบบด้วย tag ใหม่ ──
+  // ── แทนที่ H2 ด้วย placeholder ก่อน เพื่อป้องกัน regex ชนกัน ──
   activeHeadings.forEach((h, i) => {
     const sectionId = `section${i + 1}`
-    const newTag = `%%H2_START%%<h2 id="${sectionId}" style="${style}">${h}</h2>%%H2_END%%`
+    const newTag = `%%H2_${i+1}_START%%<h2 id="${sectionId}" style="${style}">${h}</h2>%%H2_${i+1}_END%%`
     const esc = h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
     text = text.replace(new RegExp(`^#{1,2}\\s+${esc}\\s*$`, 'gm'), newTag)
     text = text.replace(new RegExp(`^\\*\\*${esc}\\*\\*\\s*$`, 'gm'), newTag)
     text = text.replace(new RegExp(`^<strong>${esc}<\/strong>\\s*$`, 'gm'), newTag)
@@ -1157,10 +1158,9 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text = text.replace(new RegExp(`^${esc}\\s*$`, 'gm'), newTag)
   })
 
-  // ── plain text: จัด paragraph ด้วย <span> + &nbsp; ──
   if (!isHTML) {
-    // แยกเป็น "blocks" โดยใช้บรรทัดว่างเป็นตัวคั่น
-    // แต่ละ block คือ paragraph หนึ่งอัน (อาจมีหลายบรรทัดต่อกัน)
+    // ── Plain text mode ──
+    // แบ่งเป็น blocks ด้วยบรรทัดว่าง แต่ละ block คือ paragraph หรือรูป
     const blocks = text.split(/\n\s*\n/)
     const processed = []
 
@@ -1168,46 +1168,55 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
       const trimmed = block.trim()
       if (!trimmed) continue
 
-      if (trimmed.startsWith('%%H2_START%%')) {
-        // H2 block — ใส่ &nbsp; คั่นก่อน-หลัง
-        const h2tag = trimmed.replace('%%H2_START%%','').replace('%%H2_END%%','')
+      if (trimmed.startsWith('%%H2_')) {
+        // H2 placeholder
+        const h2tag = trimmed.replace(/%%H2_\d+_START%%/, '').replace(/%%H2_\d+_END%%/, '')
         processed.push('&nbsp;')
         processed.push(h2tag)
         processed.push('&nbsp;')
-      } else if (trimmed.startsWith('<')) {
-        // HTML ที่ติดมา เก็บไว้เดิม
+      } else if (/<img\s|<figure|<picture|<video|<iframe/i.test(trimmed)) {
+        // รูปภาพ — คงไว้ตำแหน่งเดิม ไม่ wrap
+        processed.push(trimmed)
+        processed.push('&nbsp;')
+      } else if (/^<[^>]+>/.test(trimmed)) {
+        // HTML อื่นๆ — เก็บไว้เดิม
         processed.push(trimmed)
         processed.push('&nbsp;')
       } else {
-        // paragraph ธรรมดา — รวมทุกบรรทัดในบล็อกเป็น 1 <span>
+        // paragraph ธรรมดา — รวมบรรทัดแล้ว wrap span
         const combined = trimmed.split('\n').map(l => l.trim()).filter(Boolean).join(' ')
         processed.push(`<span style="font-weight: 400;">${combined}</span>`)
         processed.push('&nbsp;')
       }
     }
-
     text = processed.join('\n')
 
   } else {
-    // HTML mode — แค่ replace marker กลับเป็น h2 tag + &nbsp;
-    text = text.replace(/%%H2_START%%(<h2[^>]+>[^<]*<\/h2>)%%H2_END%%/g,
-      '&nbsp;\n$1\n&nbsp;')
+    // ── HTML mode — คงทุกอย่างไว้เหมือนเดิม รวมถึงรูปภาพ ──
+    // แค่ replace H2 placeholder + เพิ่ม &nbsp; คั่น
+    text = text.replace(/%%H2_(\d+)_START%%(<h2[^>]+>[^<]*<\/h2>)%%H2_\d+_END%%/g,
+      '&nbsp;\n$2\n&nbsp;')
   }
 
-  // ── แทรก TOC หลังย่อหน้าแรก (หลัง <span> แรก หรือ &nbsp; แรก) ──
+  // ── แทรก TOC หลังย่อหน้าแรก (ข้ามรูปภาพที่อยู่บนสุด) ──
   const lines = text.split('\n')
   let insertIdx = lines.length
   let hasContent = false
 
   for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i].trim()
-    const isContentLine = trimmed &&
-      trimmed !== '&nbsp;' &&
-      !trimmed.startsWith('<h2 ') &&
-      !trimmed.startsWith('%%')
-    if (isContentLine) {
+    const t = lines[i].trim()
+
+    // ข้ามรูปภาพที่อยู่ก่อน paragraph แรก
+    if (/<img\s|<figure|<picture/i.test(t)) continue
+
+    const isContent = t &&
+      t !== '&nbsp;' &&
+      !t.startsWith('<h2 ') &&
+      !t.startsWith('%%')
+
+    if (isContent) {
       hasContent = true
-    } else if (hasContent && (!trimmed || trimmed === '&nbsp;')) {
+    } else if (hasContent && (!t || t === '&nbsp;')) {
       insertIdx = i + 1
       break
     }

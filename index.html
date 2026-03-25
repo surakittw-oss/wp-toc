@@ -409,13 +409,37 @@ function extractH2(text) {
       if(m&&!isNoise(m[1].trim())) result.push(m[1].trim())
     }
   } else {
-    for (let i=0;i<lines.length;i++) {
-      const t=lines[i].trim()
-      if(!t||isNoise(t)||t.length<5||t.length>100) continue
-      if(/[.,;]$/.test(t)||/^\d+[.)\s]/.test(t)) continue
-      const prev=i===0||lines[i-1].trim()===''
-      const next=i===lines.length-1||lines[i+1].trim()===''
-      if(prev&&next) result.push(t)
+    // โหมด E — Plain text อัจฉริยะ 2 แบบ:
+    // E1: ถ้าทุกบรรทัดที่ไม่ว่างสั้น (≤80 ตัวอักษร) และไม่มีเนื้อหายาว
+    //     → ถือว่าเป็น "วางหัวข้อมาตรงๆ" ทีละบรรทัด
+    // E2: ถ้ามีเนื้อหายาวปน → ใช้ bounding blank lines เหมือนเดิม
+    const meaningfulLines = lines.filter(l => {
+      const t = l.trim()
+      return t && t !== '&nbsp;' && !isNoise(t) && !/^<[^>]+>$/.test(t)
+    })
+    const allShort = meaningfulLines.length > 0 &&
+      meaningfulLines.every(l => l.trim().length <= 80)
+
+    if (allShort) {
+      // E1: วางหัวข้อทีละบรรทัด — รับทุกบรรทัดที่ไม่ว่าง ไม่ noise
+      for (const line of lines) {
+        const t = line.trim()
+        if (!t || isNoise(t) || t.length < 2) continue
+        if (t === '&nbsp;') continue
+        if (/^<[^>]+>$/.test(t)) continue       // HTML tag ล้วน
+        if (/[.,;]$/.test(t)) continue           // จบด้วยเครื่องหมาย = ประโยค
+        result.push(t)
+      }
+    } else {
+      // E2: บทความที่มีเนื้อหา — ใช้ blank lines คั่น H2
+      for (let i=0;i<lines.length;i++) {
+        const t=lines[i].trim()
+        if(!t||isNoise(t)||t.length<5||t.length>100) continue
+        if(/[.,;]$/.test(t)||/^\d+[.)\s]/.test(t)) continue
+        const prev=i===0||lines[i-1].trim()===''
+        const next=i===lines.length-1||lines[i+1].trim()===''
+        if(prev&&next) result.push(t)
+      }
     }
   }
   return result
@@ -490,7 +514,7 @@ $1
   }
   for (const [k,v] of Object.entries(mediaMap)) text=text.split(k).join(v)
   // ลบ &nbsp; ซ้ำติดกัน ให้เหลือแค่ 1 บรรทัด
-  text=text.replace(/(&nbsp;\n){2,}/g,'&nbsp;\n')
+  text=text.replace(/(&nbsp;\s*\n\s*){2,}/g,'&nbsp;\n')
     const lines=text.split('\n'); let insertIdx=lines.length
   for (let i=0;i<lines.length;i++) {
     const t=lines[i].trim()

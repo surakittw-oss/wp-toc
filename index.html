@@ -387,8 +387,8 @@ function extractH2(text) {
   const hasMarkdown = lines.some(l => /^#{1,2}\s+.+/.test(l.trim()))
   const hasHTML     = lines.some(l => /<h2[^>]*>(?:<(?:b|strong)[^>]*>)?[^<]+(?:<\/(?:b|strong)>)?<\/h2>/i.test(l.trim()))
   const hasBold     = lines.some(l => { const t=l.trim(); return /^\*\*[^*]+\*\*$/.test(t)||/^<strong>[^<]+<\/strong>$/.test(t)||/^<b>[^<]+<\/b>$/.test(t) })
-  const nonEmpty    = lines.filter(l=>l.trim())
-  const allNumbered = nonEmpty.length>=2 && nonEmpty.every(l=>/^\d+\.\s+.{2,}/.test(l.trim()))
+  const nonEmpty    = lines.filter(l=>l.trim() && l.trim()!=='&nbsp;' && !/^<\//.test(l.trim()) && !/^<[^h][^>]*>$/.test(l.trim()))
+  const allNumbered = nonEmpty.length>=2 && nonEmpty.every(l=>/^\d+\.\s+.{2,}/.test(l.trim().replace(/<[^>]+>/g,'').trim()))
 
   if (hasMarkdown||hasHTML) {
     for (const line of lines) {

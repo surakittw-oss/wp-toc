@@ -511,7 +511,17 @@ function renderH2Preview(headings, resetRemoved=true) {
   const count=document.getElementById('h2-count')
   const active=headings.filter((_,i)=>!removedSet.has(i)).length
   count.textContent=headings.length+' H2 detected'+(removedSet.size>0?` · ${active} เลือกอยู่`:'')
-  if(headings.length===0){preview.style.display='none';document.getElementById('btn-gen').disabled=true;return}
+  if(headings.length===0){
+    preview.style.display='block'
+    document.getElementById('h2-list').innerHTML=`
+      <div style="padding:12px 14px;background:rgba(230,34,39,0.06);border:1px solid rgba(230,34,39,0.15);border-radius:10px;font-size:12px;color:var(--tx2);line-height:1.7">
+        <strong style="color:var(--red)">ไม่พบ H2</strong> ในเนื้อหาที่วาง<br>
+        ลองพิมพ์หัวข้อมาเองได้เลย เช่น<br>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--tx3)">1. หัวข้อที่ 1<br>2. หัวข้อที่ 2</span>
+      </div>`
+    document.getElementById('btn-gen').disabled=true
+    return
+  }
   list.innerHTML=headings.map((h,i)=>`
     <div class="h2-chip ${removedSet.has(i)?'removed':''}" id="chip-${i}">
       <span class="h2-num">${String(i+1).padStart(2,'0')}</span>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WP TOC Generator</title>
+<title>Web TOC Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -209,7 +209,7 @@ footer { border-top:1px solid var(--border); padding:14px 28px; display:flex; ju
 <header>
   <div class="hd-left">
     <div class="hd-dot"></div>
-    <span class="hd-title">WP TOC Generator</span>
+    <span class="hd-title">Web TOC Generator by THE STANDARD</span>
     <span class="hd-tag">Classic Editor</span>
   </div>
   <div class="hd-right">0 token · no API</div>
@@ -387,8 +387,8 @@ function extractH2(text) {
   const hasMarkdown = lines.some(l => /^#{1,2}\s+.+/.test(l.trim()))
   const hasHTML     = lines.some(l => /<h2[^>]*>(?:<(?:b|strong)[^>]*>)?[^<]+(?:<\/(?:b|strong)>)?<\/h2>/i.test(l.trim()))
   const hasBold     = lines.some(l => { const t=l.trim(); return /^\*\*[^*]+\*\*$/.test(t)||/^<strong>[^<]+<\/strong>$/.test(t)||/^<b>[^<]+<\/b>$/.test(t) })
-  const nonEmpty    = lines.filter(l=>l.trim() && l.trim()!=='&nbsp;' && !/^<\//.test(l.trim()) && !/^<[^h][^>]*>$/.test(l.trim()))
-  const allNumbered = nonEmpty.length>=2 && nonEmpty.every(l=>/^\d+\.\s+.{2,}/.test(l.trim().replace(/<[^>]+>/g,'').trim()))
+  const nonEmpty    = lines.filter(l=>l.trim())
+  const allNumbered = nonEmpty.length>=2 && nonEmpty.every(l=>/^\d+\.\s+.{2,}/.test(l.trim()))
 
   if (hasMarkdown||hasHTML) {
     for (const line of lines) {
@@ -472,7 +472,7 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
         const h2=t.replace(/%%H\d+%%/,'').replace(/%%H\d+E%%/,'')
         processed.push('&nbsp;',h2,'&nbsp;')
       } else if(t.startsWith('%%M_')) {
-        processed.push(t)
+        processed.push('&nbsp;',t,'&nbsp;')
       } else if(/^<[^>]+>/.test(t)) {
         processed.push(t,'&nbsp;')
       } else {
@@ -483,15 +483,11 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text=processed.join('\n')
   } else {
     text=text.replace(/%%H(\d+)%%(<h2[^>]+>[^<]*<\/h2>)%%H\d+E%%/g,'&nbsp;\n$2\n&nbsp;')
-    text=text.replace(/(%%M_\d+%%)/g,'
-$1
-')
+    text=text.replace(/(%%M_\d+%%)/g,'\n&nbsp;\n$1\n&nbsp;\n')
     text=text.replace(/(&nbsp;\n){3,}/g,'&nbsp;\n&nbsp;\n')
   }
   for (const [k,v] of Object.entries(mediaMap)) text=text.split(k).join(v)
-  // ลบ &nbsp; ซ้ำติดกัน ให้เหลือแค่ 1 บรรทัด
-  text=text.replace(/(&nbsp;\s*\n\s*){2,}/g,'&nbsp;\n')
-    const lines=text.split('\n'); let insertIdx=lines.length
+  const lines=text.split('\n'); let insertIdx=lines.length
   for (let i=0;i<lines.length;i++) {
     const t=lines[i].trim()
     if(!t||t==='&nbsp;'||/<img\s|<figure|<iframe/i.test(t)||t.startsWith('%%M_')) continue
@@ -511,17 +507,7 @@ function renderH2Preview(headings, resetRemoved=true) {
   const count=document.getElementById('h2-count')
   const active=headings.filter((_,i)=>!removedSet.has(i)).length
   count.textContent=headings.length+' H2 detected'+(removedSet.size>0?` · ${active} เลือกอยู่`:'')
-  if(headings.length===0){
-    preview.style.display='block'
-    document.getElementById('h2-list').innerHTML=`
-      <div style="padding:12px 14px;background:rgba(230,34,39,0.06);border:1px solid rgba(230,34,39,0.15);border-radius:10px;font-size:12px;color:var(--tx2);line-height:1.7">
-        <strong style="color:var(--red)">ไม่พบ H2</strong> ในเนื้อหาที่วาง<br>
-        ลองพิมพ์หัวข้อมาเองได้เลย เช่น<br>
-        <span style="font-family:var(--mono);font-size:11px;color:var(--tx3)">1. หัวข้อที่ 1<br>2. หัวข้อที่ 2</span>
-      </div>`
-    document.getElementById('btn-gen').disabled=true
-    return
-  }
+  if(headings.length===0){preview.style.display='none';document.getElementById('btn-gen').disabled=true;return}
   list.innerHTML=headings.map((h,i)=>`
     <div class="h2-chip ${removedSet.has(i)?'removed':''}" id="chip-${i}">
       <span class="h2-num">${String(i+1).padStart(2,'0')}</span>

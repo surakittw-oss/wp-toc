@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WP TOC Generator</title>
+<title>Web TOC Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -43,7 +43,6 @@ header {
 .hd-left { display:flex; align-items:center; gap:10px; }
 .hd-dot { width:8px; height:8px; border-radius:50%; background:var(--red); animation:pulse 2.5s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
-@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 .hd-title { font-size:15px; font-weight:600; letter-spacing:-0.3px; }
 .hd-tag { font-size:10px; padding:2px 9px; border:1px solid var(--border2); border-radius:20px; color:var(--tx2); }
 .hd-right { font-family:var(--mono); font-size:10px; color:var(--tx3); }
@@ -210,7 +209,7 @@ footer { border-top:1px solid var(--border); padding:14px 28px; display:flex; ju
 <header>
   <div class="hd-left">
     <div class="hd-dot"></div>
-    <span class="hd-title">WP TOC Generator</span>
+    <span class="hd-title">Web TOC Generator by THE STANDARD</span>
     <span class="hd-tag">Classic Editor</span>
   </div>
   <div class="hd-right">0 token · no API</div>
@@ -366,12 +365,11 @@ const STYLES = {
   'The Secret Sauce': 'border-left: 13px solid #ffcd00; padding-left: 15px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 10px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); color: #000;'
 }
 
-let selectedCat  = 'NEWS'
-let detectedH2   = []
-let removedSet   = new Set()
-let outputs      = { h2:'', toc:'', full:'' }
-let activeTab    = 'h2'
-let isGenerating = false
+let selectedCat = 'NEWS'
+let detectedH2  = []
+let removedSet  = new Set()
+let outputs     = { h2:'', toc:'', full:'' }
+let activeTab   = 'h2'
 
 function extractH2(text) {
   const lines = text.split('\n')
@@ -451,13 +449,9 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   const style = STYLES[cat]
   const isHTML = /<(span|p|div|strong|b|h[1-6]|ul|li|br|img|figure|picture|iframe)\s*[^>]*>/i.test(originalText)
   let text = originalText
-
-  // ซ่อน img และ iframe ด้วย placeholder
   const mediaMap = {}; let mi = 0
   text = text.replace(/<iframe[\s\S]*?<\/iframe>/gi, m => { const k=`%%M_${mi++}%%`; mediaMap[k]=m; return k })
   text = text.replace(/<img[^>]*\/?>/gi, m => { const k=`%%M_${mi++}%%`; mediaMap[k]=m; return k })
-
-  // แทนที่ H2 ทุกรูปแบบ
   activeHeadings.forEach((h,i) => {
     const tag = `%%H${i+1}%%<h2 id="section${i+1}" style="${style}">${h}</h2>%%H${i+1}E%%`
     const esc = h.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')
@@ -465,11 +459,11 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text = text.replace(new RegExp(`^\\*\\*${esc}\\*\\*\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<strong>${esc}<\\/strong>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<b>${esc}<\\/b>\\s*$`,'gm'),tag)
-    text = text.replace(new RegExp(`^<h2[^>]*><(?:b|strong)[^>]*>\\s*${esc}\\s*<\\/(?:b|strong)>\\s*<\\/h2>\\s*$`,'gm'),tag)
+    // <h2><b>text</b></h2> และ <h2><strong>text</strong></h2> (รองรับ space ก่อน closing tag)
+    text = text.replace(new RegExp(`^<h2[^>]*><(?:b|strong)[^>]*>\\s*${esc}\\s*<\/(?:b|strong)>\\s*<\/h2>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^\\d+\\.\\s+${esc}\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^${esc}\\s*$`,'gm'),tag)
   })
-
   if (!isHTML) {
     const blocks=text.split(/\n\s*\n/); const processed=[]
     for (const block of blocks) {
@@ -489,16 +483,10 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text=processed.join('\n')
   } else {
     text=text.replace(/%%H(\d+)%%(<h2[^>]+>[^<]*<\/h2>)%%H\d+E%%/g,'&nbsp;\n$2\n&nbsp;')
-    text=text.replace(/(%%M_\d+%%)/g,'\n$1\n')
+    text=text.replace(/(%%M_\d+%%)/g,'\n&nbsp;\n$1\n&nbsp;\n')
+    text=text.replace(/(&nbsp;\n){3,}/g,'&nbsp;\n&nbsp;\n')
   }
-
-  // Restore img และ iframe
   for (const [k,v] of Object.entries(mediaMap)) text=text.split(k).join(v)
-
-  // ลบ &nbsp; ซ้ำติดกัน ให้เหลือแค่ 1 บรรทัด
-  text=text.replace(/(&nbsp;\s*\n\s*){2,}/g,'&nbsp;\n')
-
-  // แทรก TOC หลังย่อหน้าแรก
   const lines=text.split('\n'); let insertIdx=lines.length
   for (let i=0;i<lines.length;i++) {
     const t=lines[i].trim()
@@ -538,33 +526,18 @@ function toggleRemove(idx) {
 }
 
 function generate() {
-  if(isGenerating) return
   const activeH2=detectedH2.filter((_,i)=>!removedSet.has(i)); if(!activeH2.length) return
-  isGenerating = true
-  const btn = document.getElementById('btn-gen')
-  btn.disabled = true
-  btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลังประมวลผล...'
+  outputs.h2  =buildH2Output(activeH2,selectedCat)
+  outputs.toc =buildTOCOutput(activeH2)
+  outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
+  document.getElementById('empty-state').style.display='none'
+  document.getElementById('tab-row').style.display='flex'
+  document.getElementById('btn-copy-all').style.display='flex'
   document.getElementById('status-bar').style.display='flex'
-  document.getElementById('status-text').textContent='กำลัง Generate...'
+  document.getElementById('status-text').textContent=`สร้างสำเร็จ · ${activeH2.length} หัวข้อ`
   document.getElementById('status-cat').textContent=selectedCat
-
-  setTimeout(() => {
-    outputs.h2  =buildH2Output(activeH2,selectedCat)
-    outputs.toc =buildTOCOutput(activeH2)
-    outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
-    document.getElementById('empty-state').style.display='none'
-    document.getElementById('tab-row').style.display='flex'
-    document.getElementById('btn-copy-all').style.display='flex'
-    document.getElementById('status-text').textContent=`Code เสร็จแล้ว ✓ · ${activeH2.length} หัวข้อ`
-    document.getElementById('status-cat').textContent=selectedCat
-    const dot = document.querySelector('.status-dot')
-    if(dot) dot.style.background='var(--green)'
-    switchTab(activeTab)
-    showToast('Code เสร็จแล้ว!')
-    btn.disabled = false
-    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate TOC + H2'
-    isGenerating = false
-  }, 30)
+  switchTab(activeTab)
+  showToast('สร้าง TOC สำเร็จแล้ว!')
 }
 
 function switchTab(tab) {

@@ -366,11 +366,12 @@ const STYLES = {
   'The Secret Sauce': 'border-left: 13px solid #ffcd00; padding-left: 15px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 10px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); color: #000;'
 }
 
-let selectedCat = 'NEWS'
-let detectedH2  = []
-let removedSet  = new Set()
-let outputs     = { h2:'', toc:'', full:'' }
-let activeTab   = 'h2'
+let selectedCat  = 'NEWS'
+let detectedH2   = []
+let removedSet   = new Set()
+let outputs      = { h2:'', toc:'', full:'' }
+let activeTab    = 'h2'
+let isGenerating = false
 
 function extractH2(text) {
   const lines = text.split('\n')
@@ -537,20 +538,16 @@ function toggleRemove(idx) {
 }
 
 function generate() {
+  if(isGenerating) return
   const activeH2=detectedH2.filter((_,i)=>!removedSet.has(i)); if(!activeH2.length) return
-  // แสดง loading state
+  isGenerating = true
   const btn = document.getElementById('btn-gen')
-  const resetBtn = () => {
-    btn.disabled = false
-    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate TOC + H2'
-  }
   btn.disabled = true
   btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลังประมวลผล...'
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent='กำลัง Generate...'
   document.getElementById('status-cat').textContent=selectedCat
 
-  // ใช้ setTimeout เพื่อให้ browser render loading ก่อน แล้วค่อย process
   setTimeout(() => {
     outputs.h2  =buildH2Output(activeH2,selectedCat)
     outputs.toc =buildTOCOutput(activeH2)
@@ -564,7 +561,9 @@ function generate() {
     if(dot) dot.style.background='var(--green)'
     switchTab(activeTab)
     showToast('Code เสร็จแล้ว!')
-    resetBtn()
+    btn.disabled = false
+    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate TOC + H2'
+    isGenerating = false
   }, 30)
 }
 

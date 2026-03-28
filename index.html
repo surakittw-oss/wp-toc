@@ -552,24 +552,19 @@ function generate() {
 
   // ใช้ setTimeout เพื่อให้ browser render loading ก่อน แล้วค่อย process
   setTimeout(() => {
-    try {
-      outputs.h2  =buildH2Output(activeH2,selectedCat)
-      outputs.toc =buildTOCOutput(activeH2)
-      outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
-      document.getElementById('empty-state').style.display='none'
-      document.getElementById('tab-row').style.display='flex'
-      document.getElementById('btn-copy-all').style.display='flex'
-      document.getElementById('status-text').textContent=`Code เสร็จแล้ว ✓ · ${activeH2.length} หัวข้อ`
-      document.getElementById('status-cat').textContent=selectedCat
-      const dot = document.querySelector('.status-dot')
-      if(dot) dot.style.background='var(--green)'
-      switchTab(activeTab)
-      showToast('Code เสร็จแล้ว!')
-    } catch(e) {
-      document.getElementById('status-text').textContent='เกิดข้อผิดพลาด'
-    } finally {
-      resetBtn()
-    }
+    outputs.h2  =buildH2Output(activeH2,selectedCat)
+    outputs.toc =buildTOCOutput(activeH2)
+    outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
+    document.getElementById('empty-state').style.display='none'
+    document.getElementById('tab-row').style.display='flex'
+    document.getElementById('btn-copy-all').style.display='flex'
+    document.getElementById('status-text').textContent=`Code เสร็จแล้ว ✓ · ${activeH2.length} หัวข้อ`
+    document.getElementById('status-cat').textContent=selectedCat
+    const dot = document.querySelector('.status-dot')
+    if(dot) dot.style.background='var(--green)'
+    switchTab(activeTab)
+    showToast('Code เสร็จแล้ว!')
+    resetBtn()
   }, 30)
 }
 

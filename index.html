@@ -43,7 +43,6 @@ header {
 .hd-left { display:flex; align-items:center; gap:10px; }
 .hd-dot { width:8px; height:8px; border-radius:50%; background:var(--red); animation:pulse 2.5s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
-@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 .hd-title { font-size:15px; font-weight:600; letter-spacing:-0.3px; }
 .hd-tag { font-size:10px; padding:2px 9px; border:1px solid var(--border2); border-radius:20px; color:var(--tx2); }
 .hd-right { font-family:var(--mono); font-size:10px; color:var(--tx3); }
@@ -246,10 +245,9 @@ footer { border-top:1px solid var(--border); padding:14px 28px; display:flex; ju
           <div class="lbl" style="margin-bottom:8px">H2 ที่ตรวจพบ</div>
           <div style="display:flex;flex-direction:column;gap:7px" id="h2-list"></div>
         </div>
-        <!-- FIX 2+3: ปุ่ม Generate — ไม่ disabled เมื่อ output มีอยู่แล้ว (Re-generate) -->
         <button class="btn-gen" id="btn-gen" disabled>
-          <svg id="btn-gen-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span id="btn-gen-label">Generate TOC + H2</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Generate TOC + H2
         </button>
       </div>
     </div>
@@ -367,12 +365,11 @@ const STYLES = {
   'The Secret Sauce': 'border-left: 13px solid #ffcd00; padding-left: 15px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 10px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); color: #000;'
 }
 
-let selectedCat  = 'NEWS'
-let detectedH2   = []
-let removedSet   = new Set()
-let outputs      = { h2:'', toc:'', full:'' }
-let activeTab    = 'h2'
-let hasGenerated = false   // FIX 2: track ว่าเคย generate แล้วหรือยัง
+let selectedCat = 'NEWS'
+let detectedH2  = []
+let removedSet  = new Set()
+let outputs     = { h2:'', toc:'', full:'' }
+let activeTab   = 'h2'
 
 function extractH2(text) {
   const lines = text.split('\n')
@@ -447,7 +444,6 @@ ${items}
 </div>`
 }
 
-// FIX 1: ลบ &nbsp; ซ้ำใน buildFullOutput (เพิ่มแค่ 1 บรรทัดหลัง restore media)
 function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   if (!originalText.trim()) return ''
   const style = STYLES[cat]
@@ -463,7 +459,8 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text = text.replace(new RegExp(`^\\*\\*${esc}\\*\\*\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<strong>${esc}<\\/strong>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<b>${esc}<\\/b>\\s*$`,'gm'),tag)
-    text = text.replace(new RegExp(`^<h2[^>]*><(?:b|strong)[^>]*>\\s*${esc}\\s*<\\/(?:b|strong)>\\s*<\\/h2>\\s*$`,'gm'),tag)
+    // <h2><b>text</b></h2> และ <h2><strong>text</strong></h2> (รองรับ space ก่อน closing tag)
+    text = text.replace(new RegExp(`^<h2[^>]*><(?:b|strong)[^>]*>\\s*${esc}\\s*<\/(?:b|strong)>\\s*<\/h2>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^\\d+\\.\\s+${esc}\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^${esc}\\s*$`,'gm'),tag)
   })
@@ -486,12 +483,10 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
     text=processed.join('\n')
   } else {
     text=text.replace(/%%H(\d+)%%(<h2[^>]+>[^<]*<\/h2>)%%H\d+E%%/g,'&nbsp;\n$2\n&nbsp;')
-    text=text.replace(/(%%M_\d+%%)/g,'\n$1\n')
+    text=text.replace(/(%%M_\d+%%)/g,'\n&nbsp;\n$1\n&nbsp;\n')
     text=text.replace(/(&nbsp;\n){3,}/g,'&nbsp;\n&nbsp;\n')
   }
   for (const [k,v] of Object.entries(mediaMap)) text=text.split(k).join(v)
-  // FIX 1: ลบ &nbsp; ซ้ำติดกัน ให้เหลือแค่ 1 บรรทัด
-  text=text.replace(/(&nbsp;\s*\n\s*){2,}/g,'&nbsp;\n')
   const lines=text.split('\n'); let insertIdx=lines.length
   for (let i=0;i<lines.length;i++) {
     const t=lines[i].trim()
@@ -505,20 +500,6 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   return lines.join('\n')
 }
 
-function updateBtnState() {
-  const btn = document.getElementById('btn-gen')
-  const label = document.getElementById('btn-gen-label')
-  const anyActive = detectedH2.some((_,i)=>!removedSet.has(i))
-  if (!anyActive) {
-    btn.disabled = true
-    label.textContent = 'Generate TOC + H2'
-  } else {
-    btn.disabled = false
-    // FIX 2+3: ถ้าเคย generate แล้ว ให้แสดง Re-generate เสมอ
-    label.textContent = hasGenerated ? 'Re-generate' : 'Generate TOC + H2'
-  }
-}
-
 function renderH2Preview(headings, resetRemoved=true) {
   if(resetRemoved) removedSet.clear()
   const list=document.getElementById('h2-list')
@@ -526,7 +507,7 @@ function renderH2Preview(headings, resetRemoved=true) {
   const count=document.getElementById('h2-count')
   const active=headings.filter((_,i)=>!removedSet.has(i)).length
   count.textContent=headings.length+' H2 detected'+(removedSet.size>0?` · ${active} เลือกอยู่`:'')
-  if(headings.length===0){preview.style.display='none';updateBtnState();return}
+  if(headings.length===0){preview.style.display='none';document.getElementById('btn-gen').disabled=true;return}
   list.innerHTML=headings.map((h,i)=>`
     <div class="h2-chip ${removedSet.has(i)?'removed':''}" id="chip-${i}">
       <span class="h2-num">${String(i+1).padStart(2,'0')}</span>
@@ -535,12 +516,13 @@ function renderH2Preview(headings, resetRemoved=true) {
       <button class="btn-remove" onclick="toggleRemove(${i})">${removedSet.has(i)?'+':'✕'}</button>
     </div>`).join('')
   preview.style.display='block'
-  updateBtnState()
+  document.getElementById('btn-gen').disabled=!headings.some((_,i)=>!removedSet.has(i))
 }
 
 function toggleRemove(idx) {
   if(removedSet.has(idx)) removedSet.delete(idx); else removedSet.add(idx)
   renderH2Preview(detectedH2,false)
+  document.getElementById('btn-gen').disabled=!detectedH2.some((_,i)=>!removedSet.has(i))
 }
 
 function generate() {
@@ -548,14 +530,12 @@ function generate() {
   outputs.h2  =buildH2Output(activeH2,selectedCat)
   outputs.toc =buildTOCOutput(activeH2)
   outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
-  hasGenerated = true
   document.getElementById('empty-state').style.display='none'
   document.getElementById('tab-row').style.display='flex'
   document.getElementById('btn-copy-all').style.display='flex'
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent=`สร้างสำเร็จ · ${activeH2.length} หัวข้อ`
   document.getElementById('status-cat').textContent=selectedCat
-  updateBtnState()
   switchTab(activeTab)
   showToast('สร้าง TOC สำเร็จแล้ว!')
 }
@@ -601,10 +581,8 @@ function showToast(msg) {
 }
 function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
-// FIX 3: วางเนื้อหาใหม่ → reset hasGenerated → ปุ่มกลับเป็น Generate
 document.getElementById('input-text').addEventListener('input', function() {
   document.getElementById('char-count').textContent=this.value.length+' ตัวอักษร'
-  hasGenerated = false
   detectedH2=extractH2(this.value); removedSet.clear(); renderH2Preview(detectedH2,true)
 })
 document.getElementById('btn-gen').addEventListener('click', generate)
@@ -612,8 +590,6 @@ document.getElementById('cat-grid').addEventListener('click', function(e) {
   const btn=e.target.closest('.cat-btn'); if(!btn) return
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'))
   btn.classList.add('active'); selectedCat=btn.dataset.cat
-  // FIX 2: เปลี่ยนหมวด → ปุ่มเป็น Re-generate ถ้าเคย gen แล้ว
-  updateBtnState()
 })
 
 // BUTTON GENERATOR

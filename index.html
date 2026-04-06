@@ -372,7 +372,6 @@ let detectedH2   = []
 let removedSet   = new Set()
 let outputs      = { h2:'', toc:'', full:'' }
 let activeTab    = 'h2'
-let hasGenerated = false   // FIX 2: track ว่าเคย generate แล้วหรือยัง
 
 function extractH2(text) {
   const lines = text.split('\n')
@@ -507,17 +506,8 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
 
 function updateBtnState() {
   const btn = document.getElementById('btn-gen')
-  const label = document.getElementById('btn-gen-label')
   const anyActive = detectedH2.some((_,i)=>!removedSet.has(i))
-  if (!anyActive) {
-    btn.disabled = true
-    label.textContent = 'Generate TOC + H2'
-  } else {
-    btn.disabled = false
-    // hasGenerated=true และ input ยังเป็น content เดิม → Re-generate
-    // hasGenerated=false → เนื้อหาใหม่ → Generate TOC + H2
-    label.textContent = hasGenerated ? '↺ Re-generate' : 'Generate TOC + H2'
-  }
+  btn.disabled = !anyActive
 }
 
 function renderH2Preview(headings, resetRemoved=true) {
@@ -549,14 +539,12 @@ function generate() {
   outputs.h2  =buildH2Output(activeH2,selectedCat)
   outputs.toc =buildTOCOutput(activeH2)
   outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
-  hasGenerated = true
   document.getElementById('empty-state').style.display='none'
   document.getElementById('tab-row').style.display='flex'
   document.getElementById('btn-copy-all').style.display='flex'
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent=`สร้างสำเร็จ · ${activeH2.length} หัวข้อ`
   document.getElementById('status-cat').textContent=selectedCat
-  updateBtnState()
   switchTab(activeTab)
   showToast('สร้าง TOC สำเร็จแล้ว!')
 }
@@ -602,10 +590,8 @@ function showToast(msg) {
 }
 function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
-// FIX 3: วางเนื้อหาใหม่ → reset hasGenerated → ปุ่มกลับเป็น Generate
 document.getElementById('input-text').addEventListener('input', function() {
   document.getElementById('char-count').textContent=this.value.length+' ตัวอักษร'
-  hasGenerated = false
   detectedH2=extractH2(this.value); removedSet.clear(); renderH2Preview(detectedH2,true)
 })
 document.getElementById('btn-gen').addEventListener('click', generate)
@@ -613,8 +599,6 @@ document.getElementById('cat-grid').addEventListener('click', function(e) {
   const btn=e.target.closest('.cat-btn'); if(!btn) return
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'))
   btn.classList.add('active'); selectedCat=btn.dataset.cat
-  // เปลี่ยนหมวด → ถ้าเคย gen แล้ว ให้ปุ่มเป็น "Re-generate" ทันที
-  updateBtnState()
 })
 
 // BUTTON GENERATOR

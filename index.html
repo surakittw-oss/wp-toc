@@ -277,6 +277,11 @@ footer { border-top:1px solid var(--border); padding:14px 28px; display:flex; ju
         <small>จากนั้นกด Generate</small>
       </div>
     </div>
+    <!-- H2 Preview panel — แสดง H2 render จริงๆ เหมือน Button Generator -->
+    <div id="h2-live-preview" style="display:none; padding:16px 22px; border-top:1px solid var(--border);">
+      <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;">H2 Preview</div>
+      <div id="h2-preview-render"></div>
+    </div>
     <div class="status-bar" id="status-bar" style="display:none">
       <span><span class="status-dot"></span><span id="status-text">พร้อมใช้งาน</span></span>
       <span id="status-cat" style="color:var(--tx2)">—</span>
@@ -510,6 +515,18 @@ function updateBtnState() {
   btn.disabled = !anyActive
 }
 
+function previewH2() {
+  const activeH2 = detectedH2.filter((_,i)=>!removedSet.has(i))
+  const panel = document.getElementById('h2-live-preview')
+  const render = document.getElementById('h2-preview-render')
+  if(!activeH2.length){ panel.style.display='none'; return }
+  const style = STYLES[selectedCat]
+  render.innerHTML = activeH2.slice(0,3).map(h =>
+    `<h2 style="${style};font-size:16px;margin-bottom:8px;">${h}</h2>`
+  ).join('') + (activeH2.length>3 ? `<p style="font-size:11px;color:var(--tx3);margin-top:4px;">+ ${activeH2.length-3} หัวข้อถัดไป</p>` : '')
+  panel.style.display='block'
+}
+
 function renderH2Preview(headings, resetRemoved=true) {
   if(resetRemoved) removedSet.clear()
   const list=document.getElementById('h2-list')
@@ -527,6 +544,7 @@ function renderH2Preview(headings, resetRemoved=true) {
     </div>`).join('')
   preview.style.display='block'
   updateBtnState()
+  previewH2()
 }
 
 function toggleRemove(idx) {
@@ -599,6 +617,11 @@ document.getElementById('cat-grid').addEventListener('click', function(e) {
   const btn=e.target.closest('.cat-btn'); if(!btn) return
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'))
   btn.classList.add('active'); selectedCat=btn.dataset.cat
+  // อัปเดต status-cat และ H2 preview ทันที
+  if(document.getElementById('status-bar').style.display !== 'none') {
+    document.getElementById('status-cat').textContent=selectedCat
+  }
+  previewH2()
 })
 
 // BUTTON GENERATOR

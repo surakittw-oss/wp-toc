@@ -554,17 +554,27 @@ function toggleRemove(idx) {
 
 function generate() {
   const activeH2=detectedH2.filter((_,i)=>!removedSet.has(i)); if(!activeH2.length) return
-  outputs.h2  =buildH2Output(activeH2,selectedCat)
-  outputs.toc =buildTOCOutput(activeH2)
-  outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
-  document.getElementById('empty-state').style.display='none'
-  document.getElementById('tab-row').style.display='flex'
-  document.getElementById('btn-copy-all').style.display='flex'
-  document.getElementById('status-bar').style.display='flex'
-  document.getElementById('status-text').textContent=`สร้างสำเร็จ · ${activeH2.length} หัวข้อ`
-  document.getElementById('status-cat').textContent=selectedCat
-  switchTab(activeTab)
-  showToast('สร้าง TOC สำเร็จแล้ว!')
+
+  // แสดง loading ใน H2 preview ทันที
+  const panel = document.getElementById('h2-live-preview')
+  const render = document.getElementById('h2-preview-render')
+  panel.style.display='block'
+  render.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--tx3);font-size:12px;padding:8px 0"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin 1s linear infinite;flex-shrink:0"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>กำลัง Generate H2 style...</div>'
+
+  setTimeout(() => {
+    outputs.h2  =buildH2Output(activeH2,selectedCat)
+    outputs.toc =buildTOCOutput(activeH2)
+    outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
+    document.getElementById('empty-state').style.display='none'
+    document.getElementById('tab-row').style.display='flex'
+    document.getElementById('btn-copy-all').style.display='flex'
+    document.getElementById('status-bar').style.display='flex'
+    document.getElementById('status-text').textContent=`สร้างสำเร็จ · ${activeH2.length} หัวข้อ`
+    document.getElementById('status-cat').textContent=selectedCat
+    switchTab(activeTab)
+    previewH2()
+    showToast('สร้าง TOC สำเร็จแล้ว!')
+  }, 60)
 }
 
 function switchTab(tab) {
@@ -617,11 +627,18 @@ document.getElementById('cat-grid').addEventListener('click', function(e) {
   const btn=e.target.closest('.cat-btn'); if(!btn) return
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'))
   btn.classList.add('active'); selectedCat=btn.dataset.cat
-  // อัปเดต status-cat และ H2 preview ทันที
+  // อัปเดต status-cat ทันที
   if(document.getElementById('status-bar').style.display !== 'none') {
     document.getElementById('status-cat').textContent=selectedCat
   }
-  previewH2()
+  // แสดง loading ใน H2 preview ก่อน แล้วค่อย render ใหม่
+  const panel = document.getElementById('h2-live-preview')
+  const render = document.getElementById('h2-preview-render')
+  if(detectedH2.length > 0) {
+    panel.style.display='block'
+    render.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--tx3);font-size:12px;padding:8px 0"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin 1s linear infinite;flex-shrink:0"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>กำลังเปลี่ยน H2 style...</div>'
+    setTimeout(() => previewH2(), 40)
+  }
 })
 
 // BUTTON GENERATOR

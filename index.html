@@ -514,8 +514,9 @@ function updateBtnState() {
     label.textContent = 'Generate TOC + H2'
   } else {
     btn.disabled = false
-    // FIX 2+3: ถ้าเคย generate แล้ว ให้แสดง Re-generate เสมอ
-    label.textContent = hasGenerated ? 'Re-generate' : 'Generate TOC + H2'
+    // hasGenerated=true และ input ยังเป็น content เดิม → Re-generate
+    // hasGenerated=false → เนื้อหาใหม่ → Generate TOC + H2
+    label.textContent = hasGenerated ? '↺ Re-generate' : 'Generate TOC + H2'
   }
 }
 
@@ -612,7 +613,7 @@ document.getElementById('cat-grid').addEventListener('click', function(e) {
   const btn=e.target.closest('.cat-btn'); if(!btn) return
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'))
   btn.classList.add('active'); selectedCat=btn.dataset.cat
-  // FIX 2: เปลี่ยนหมวด → ปุ่มเป็น Re-generate ถ้าเคย gen แล้ว
+  // เปลี่ยนหมวด → ถ้าเคย gen แล้ว ให้ปุ่มเป็น "Re-generate" ทันที
   updateBtnState()
 })
 

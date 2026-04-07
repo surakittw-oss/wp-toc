@@ -474,19 +474,21 @@ function toggleRemove(idx) {
 
 function generate() {
   const activeH2=detectedH2.filter((_,i)=>!removedSet.has(i)); if(!activeH2.length) return
-  // แสดง status bar ก่อน gen ให้ผู้ใช้รู้ว่ากำลังทำงาน
+  // แสดง "กำลัง Generate..." ก่อน แล้วให้ browser paint 1 frame
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent='กำลัง Generate...'
   document.getElementById('status-cat').textContent=selectedCat
-  outputs.h2  =buildH2Output(activeH2,selectedCat)
-  outputs.toc =buildTOCOutput(activeH2)
-  outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
-  document.getElementById('empty-state').style.display='none'
-  document.getElementById('tab-row').style.display='flex'
-  document.getElementById('btn-copy-all').style.display='flex'
-  document.getElementById('status-text').textContent=`✓ Code พร้อมแล้ว · ${activeH2.length} หัวข้อ`
-  switchTab(activeTab)
-  showToast('สร้าง TOC สำเร็จแล้ว!')
+  setTimeout(() => {
+    outputs.h2  =buildH2Output(activeH2,selectedCat)
+    outputs.toc =buildTOCOutput(activeH2)
+    outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
+    document.getElementById('empty-state').style.display='none'
+    document.getElementById('tab-row').style.display='flex'
+    document.getElementById('btn-copy-all').style.display='flex'
+    document.getElementById('status-text').textContent=`✓ Code พร้อมแล้ว · ${activeH2.length} หัวข้อ`
+    switchTab(activeTab)
+    showToast('สร้าง TOC สำเร็จแล้ว!')
+  }, 0)
 }
 
 function switchTab(tab) {

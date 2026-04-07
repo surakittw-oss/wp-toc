@@ -478,7 +478,8 @@ function generate() {
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent='กำลัง Generate...'
   document.getElementById('status-cat').textContent=selectedCat
-  setTimeout(() => {
+  // รอ browser paint "กำลัง Generate..." ก่อน แล้วค่อย process
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     outputs.h2  =buildH2Output(activeH2,selectedCat)
     outputs.toc =buildTOCOutput(activeH2)
     outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
@@ -488,7 +489,7 @@ function generate() {
     document.getElementById('status-text').textContent=`✓ Code พร้อมแล้ว · ${activeH2.length} หัวข้อ`
     switchTab(activeTab)
     showToast('สร้าง TOC สำเร็จแล้ว!')
-  }, 50)
+  }))
 }
 
 function switchTab(tab) {

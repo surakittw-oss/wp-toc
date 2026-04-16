@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Web TOC Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- [จุดที่ 1] Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --bg:#f5f5f7; --card:#ffffff; --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.13);
@@ -86,6 +88,13 @@ textarea::placeholder{color:var(--tx3);font-size:13px}
 .step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--tx2);line-height:1.55}
 .step-num{font-family:var(--mono);font-size:10px;color:var(--red);background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;padding:2px 7px;min-width:24px;text-align:center;margin-top:1px;flex-shrink:0}
 .warn-box{padding:12px 15px;background:rgba(230,34,39,0.05);border:1px solid rgba(230,34,39,0.15);border-radius:var(--r-sm);font-size:12px;color:var(--tx2);line-height:1.6;margin-top:6px}
+
+/* LOGIN WALL */
+#login-wall{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.lw-logo{font-size:13px;font-weight:600;color:var(--tx2);letter-spacing:2px;text-transform:uppercase}
+.lw-title{font-size:22px;font-weight:600;color:var(--tx);letter-spacing:-0.4px}
+.lw-sub{font-size:13px;color:var(--tx2)}
+#login-error{display:none;font-size:12px;color:var(--red);margin-top:4px;text-align:center;max-width:320px}
 
 /* H2 Preview panel */
 .h2-prev-panel{padding:14px 22px;border-top:1px solid var(--border);display:none}
@@ -568,6 +577,51 @@ function copyBtnCode(){
   navigator.clipboard.writeText(code).then(()=>showToast('Copied Button Code แล้ว!'))
 }
 previewBtn()
+</script>
+<!-- [จุดที่ 3] Login wall — วางหน้า app ทั้งหมด ────────────── -->
+<div id="login-wall">
+  <div class="lw-logo">The Standard</div>
+  <div class="lw-title">WP TOC Generator</div>
+  <div class="lw-sub">สำหรับทีม The Standard เท่านั้น</div>
+
+  <!-- Google Sign-In button -->
+  <div id="g_id_onload"
+    data-client_id="YOUR_GOOGLE_CLIENT_ID"
+    data-callback="onGoogleLogin"
+    data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin"
+    data-type="standard"
+    data-theme="outline"
+    data-size="large"
+    data-text="signin_with"
+    data-logo_alignment="left">
+  </div>
+
+  <div id="login-error"></div>
+</div>
+
+<script>
+// [จุดที่ 3] Google OAuth callback — ตรวจ domain องค์กร
+const ALLOWED_DOMAIN = 'thestandard.co'  // ← เปลี่ยนตาม domain จริง
+
+function onGoogleLogin(response) {
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]))
+    if (payload.hd === ALLOWED_DOMAIN) {
+      // ผ่าน — ซ่อน overlay แสดง app
+      document.getElementById('login-wall').style.display = 'none'
+    } else {
+      // ไม่ผ่าน — แสดง error
+      const err = document.getElementById('login-error')
+      err.style.display = 'block'
+      err.textContent = `อีเมล ${payload.email} ไม่ได้รับอนุญาต — กรุณาใช้อีเมล @${ALLOWED_DOMAIN}`
+    }
+  } catch(e) {
+    document.getElementById('login-error').style.display = 'block'
+    document.getElementById('login-error').textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่'
+  }
+}
 </script>
 </body>
 </html>

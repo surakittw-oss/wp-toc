@@ -602,17 +602,26 @@ previewBtn()
 </div>
 
 <script>
-// [จุดที่ 3] Google OAuth callback — ตรวจ domain องค์กร
-const ALLOWED_DOMAIN = 'thestandard.co'  // ← เปลี่ยนตาม domain จริง
+const ALLOWED_DOMAIN = 'thestandard.co'
+const SESSION_KEY    = 'toc_auth_email'
 
+// ตรวจสอบตอนโหลดหน้า — ถ้ามี session อยู่แล้วให้ข้ามหน้า login ได้เลย
+;(function checkSession() {
+  const saved = sessionStorage.getItem(SESSION_KEY)
+  if (saved) {
+    document.getElementById('login-wall').style.display = 'none'
+  }
+})()
+
+// Google OAuth callback
 function onGoogleLogin(response) {
   try {
     const payload = JSON.parse(atob(response.credential.split('.')[1]))
     if (payload.hd === ALLOWED_DOMAIN) {
-      // ผ่าน — ซ่อน overlay แสดง app
+      // บันทึก session แล้วซ่อน overlay
+      sessionStorage.setItem(SESSION_KEY, payload.email)
       document.getElementById('login-wall').style.display = 'none'
     } else {
-      // ไม่ผ่าน — แสดง error
       const err = document.getElementById('login-error')
       err.style.display = 'block'
       err.textContent = `อีเมล ${payload.email} ไม่ได้รับอนุญาต — กรุณาใช้อีเมล @${ALLOWED_DOMAIN}`

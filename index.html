@@ -559,11 +559,25 @@ function showToast(msg){
 function escHtml(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
 function clearAll() {
+  // clear input
   const ta = document.getElementById('input-text')
   ta.value = ''
   document.getElementById('char-count').textContent = '0 ตัวอักษร'
   document.getElementById('btn-clear').style.display = 'none'
   detectedH2 = []; removedSet.clear(); renderH2Preview([], true)
+  // clear output
+  outputs = { h2:'', toc:'', full:'' }
+  document.getElementById('tab-row').style.display = 'none'
+  document.getElementById('btn-copy-all').style.display = 'none'
+  document.getElementById('status-bar').style.display = 'none'
+  document.getElementById('h2-prev-panel').style.display = 'none'
+  document.getElementById('output-body').innerHTML = `
+    <div class="empty" id="empty-state">
+      <div class="empty-icon">✦</div>
+      <div>วาง H2 และเลือกหมวดข่าว</div>
+      <small>จากนั้นกด Generate</small>
+    </div>`
+  activeTab = 'h2'
   ta.focus()
 }
 

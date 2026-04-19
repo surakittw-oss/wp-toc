@@ -71,6 +71,10 @@ textarea::placeholder{color:var(--tx3);font-size:13px}
 .btn-gen{width:100%;padding:13px;background:var(--red);border:none;border-radius:var(--r-md);color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .18s ease;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-gen:hover:not(:disabled){background:#c91e23;transform:translateY(-1px);box-shadow:0 6px 20px rgba(230,34,39,0.3)}
 .btn-gen:disabled{background:var(--tx3);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-clear{width:100%;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-md);color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:none;align-items:center;justify-content:center;gap:7px}
+.btn-clear:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.btn-clear{width:100%;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-md);color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s ease;display:none;align-items:center;justify-content:center;gap:7px}
+.btn-clear:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
 
 .out-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column}
 .tab-row{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -190,6 +194,10 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
         <button class="btn-gen" id="btn-gen" disabled>
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           Generate TOC + H2
+        </button>
+        <button class="btn-clear" id="btn-clear" onclick="clearAll()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          Clear ข้อความ
         </button>
       </div>
     </div>
@@ -550,8 +558,19 @@ function showToast(msg){
 }
 function escHtml(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
+function clearAll() {
+  const ta = document.getElementById('input-text')
+  ta.value = ''
+  document.getElementById('char-count').textContent = '0 ตัวอักษร'
+  document.getElementById('btn-clear').style.display = 'none'
+  detectedH2 = []; removedSet.clear(); renderH2Preview([], true)
+  ta.focus()
+}
+
 document.getElementById('input-text').addEventListener('input', function(){
   document.getElementById('char-count').textContent=this.value.length+' ตัวอักษร'
+  // แสดงปุ่ม Clear เมื่อมีข้อความ
+  document.getElementById('btn-clear').style.display = this.value.length > 0 ? 'flex' : 'none'
   detectedH2=extractH2(this.value); removedSet.clear(); renderH2Preview(detectedH2,true)
 })
 document.getElementById('btn-gen').addEventListener('click', generate)
@@ -595,7 +614,7 @@ previewBtn()
 
   <!-- Google Sign-In button -->
   <div id="g_id_onload"
-    data-client_id="854069548103-irlnb9kg3o3tl1v8kjmgrdsu2pkn72gn.apps.googleusercontent.com"
+    data-client_id="YOUR_GOOGLE_CLIENT_ID"
     data-callback="onGoogleLogin"
     data-auto_prompt="false">
   </div>

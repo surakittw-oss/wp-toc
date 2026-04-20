@@ -1,71 +1,104 @@
 # WP TOC Generator
 
-สร้าง Table of Contents (TOC) + H2 พร้อม `id=` และ style ตามหมวดข่าว สำหรับ WordPress Classic Editor
+Static web app สำหรับทีมเว็บ **The Standard** ใช้สร้าง Table of Contents + H2 style สำหรับ WordPress Classic Editor
 
-**ไม่ใช้ Claude API · ไม่กิน token · รันใน browser 100%**
-
----
-
-## ฟีเจอร์
-
-- เลือกหมวดข่าว 6 หมวด (TSD, TSD POP, TSD Wealth, LIFE, TSD SPORT, The Secret Sauce)
-- วางบทความเต็มหรือพิมพ์ H2 มาเองก็ได้
-- Detect หัวข้อ H2 อัตโนมัติ (Markdown `##` และ HTML `<h2>`)
-- สร้าง HTML code 2 ส่วน พร้อม Copy ได้ทันที
-  - **ส่วนที่ 1**: `<h2 id="sectionX" style="...">` ครบทุกหัวข้อ
-  - **ส่วนที่ 2**: TOC Block พร้อม anchor links
+> 0 token · no API · ไฟล์เดียว deploy บน Vercel
 
 ---
 
-## การติดตั้งและ Deploy
+## Features
 
-### ขั้นตอนที่ 1 — สร้าง GitHub Repository
-
-1. ไปที่ [github.com](https://github.com) → กด **New repository**
-2. ตั้งชื่อ เช่น `wp-toc-generator`
-3. เลือก **Public**
-4. **ไม่ต้อง** tick Add README
-5. กด **Create repository**
+- **TOC Generator** — สร้าง TOC Block + H2 พร้อม `id=` และ style สีตามหมวดข่าว
+- **H2 Preview** — แสดง H2 style จริงๆ ทันทีก่อนกด Generate
+- **Button Generator** — สร้างปุ่ม HTML พร้อม preview real-time
+- **Google OAuth** — จำกัดการใช้งานเฉพาะอีเมล `@thestandard.co`
 
 ---
 
-### ขั้นตอนที่ 2 — ติดตั้ง GitHub Desktop
+## Input Modes
 
-1. ดาวน์โหลด [GitHub Desktop](https://desktop.github.com)
-2. ติดตั้งและ Sign in ด้วย GitHub account
+รองรับการวางเนื้อหา 5 รูปแบบ
 
----
-
-### ขั้นตอนที่ 3 — Clone และ Push ไฟล์
-
-1. เปิด GitHub Desktop → **File → Clone repository**
-2. เลือก repo `wp-toc-generator` ที่เพิ่งสร้าง
-3. เลือก Local Path ที่ต้องการเก็บ → กด **Clone**
-4. คัดลอกไฟล์ `index.html` และ `README.md` ลงใน folder นั้น
-5. ใน GitHub Desktop จะเห็นไฟล์ใหม่ปรากฏใน **Changes**
-6. ใส่ Commit message เช่น `init: add WP TOC Generator`
-7. กด **Commit to main**
-8. กด **Push origin**
+| รูปแบบ | ตัวอย่าง |
+|--------|---------|
+| HTML จาก WordPress | `<h2><b>หัวข้อ</b></h2>` |
+| Markdown | `## หัวข้อ` |
+| Numbered list | `1. หัวข้อ` |
+| Bold | `**หัวข้อ**` |
+| Plain text | เว้นบรรทัดว่างทั้งสองด้าน |
 
 ---
 
-### ขั้นตอนที่ 4 — Deploy บน Vercel
+## หมวดข่าว + Style
 
-1. ไปที่ [vercel.com](https://vercel.com) → Sign in ด้วย GitHub
-2. กด **Add New → Project**
-3. เลือก repository `wp-toc-generator`
-4. ไม่ต้องปรับ settings ใดๆ → กด **Deploy**
-5. รอ ~30 วินาที → ได้ URL เช่น `wp-toc-generator.vercel.app`
-
-**เสร็จแล้ว!** ทุกครั้งที่ `git push` เว็บจะ update อัตโนมัติ
+| หมวด | สี Border-left |
+|------|---------------|
+| NEWS | `#e62227` แดง |
+| POP | `#0000ff` น้ำเงิน |
+| WEALTH | `#c19380` โรสโกลด์ |
+| LIFE | `#000000` ดำ |
+| SPORT | `#ffa5f7` ชมพู |
+| The Secret Sauce | `#ffcd00` เหลือง + glassmorphism |
 
 ---
 
-## โครงสร้างไฟล์
+## Output Tabs
+
+| Tab | รายละเอียด |
+|-----|-----------|
+| **H2 + id= + style** | H2 พร้อม anchor id และ style ตามหมวด |
+| **TOC Block** | HTML block สำหรับวางบนสุดบทความ |
+| **บทความรวม** | TOC + เนื้อหา + H2 replace ครบในครั้งเดียว |
+| **วิธีใช้** | คู่มือการใช้งาน |
+
+---
+
+## Google OAuth Setup
+
+1. ไปที่ [Google Cloud Console](https://console.cloud.google.com) → สร้าง project
+2. **APIs & Services → Credentials** → สร้าง OAuth 2.0 Client ID
+3. เลือก type: **Web application**
+4. เพิ่ม Authorized JavaScript origins: `https://your-app.vercel.app`
+5. ใส่ Client ID ใน `index.html`
+
+```html
+<div id="g_id_onload"
+  data-client_id="YOUR_CLIENT_ID.apps.googleusercontent.com"
+  ...>
+</div>
+```
+
+6. เปลี่ยน domain ใน script
+
+```js
+const ALLOWED_DOMAIN = 'thestandard.co'
+```
+
+---
+
+## Deploy
+
+```bash
+# 1. Clone หรือ fork repo
+git clone https://github.com/your-org/wp-toc-generator
+
+# 2. แก้ Client ID และ domain ใน index.html
+
+# 3. Push ขึ้น GitHub → Vercel auto-deploy
+git add .
+git commit -m "update"
+git push
+```
+
+Vercel จะ deploy `index.html` เป็น static site โดยอัตโนมัติ
+
+---
+
+## File Structure
 
 ```
-wp-toc-generator/
-├── index.html    ← ไฟล์เดียว ทุกอย่างอยู่ในนี้
+/
+└── index.html      ← ทั้ง app อยู่ในไฟล์เดียว
 └── README.md
 ```
 
@@ -73,13 +106,22 @@ wp-toc-generator/
 
 ## Tech Stack
 
-- **HTML + CSS + Vanilla JavaScript** — ไม่มี framework
-- **Google Fonts** — IBM Plex Sans Thai + IBM Plex Mono
-- **Vercel** — Static hosting ฟรี
-- **GitHub Desktop** — สำหรับ push code
+- Vanilla HTML / CSS / JavaScript — ไม่มี framework
+- Font: **Prompt** + JetBrains Mono (Google Fonts)
+- Auth: Google Identity Services (GSI)
+- Deploy: Vercel (static)
 
 ---
 
-## License
+## Changelog
 
-MIT
+| Version | รายละเอียด |
+|---------|-----------|
+| v1.0 | TOC Generator + Button Generator |
+| v1.1 | เพิ่ม H2 Preview panel + status bar |
+| v1.2 | เพิ่ม Google OAuth + user bar |
+| v1.3 | เพิ่มปุ่ม Clear (input + output) |
+
+---
+
+*WP TOC Generator — The Standard Web Team*

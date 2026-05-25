@@ -524,7 +524,7 @@ function generate() {
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent='กำลัง Generate...'
   document.getElementById('status-cat').textContent=selectedCat
-  setTimeout(() => {
+  requestAnimationFrame(() => { setTimeout(() => {
     outputs.h2  =buildH2Output(activeH2,selectedCat)
     outputs.toc =buildTOCOutput(activeH2)
     outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
@@ -539,7 +539,7 @@ function generate() {
     btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate TOC + H2'
     switchTab(activeTab)
     showToast('✓ Code พร้อมแล้ว!')
-  }, 0)
+  }, 0) })
 }
 
 function switchTab(tab) {

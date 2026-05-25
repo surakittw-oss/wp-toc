@@ -521,8 +521,8 @@ function generate() {
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent='กำลัง Generate...'
   document.getElementById('status-cat').textContent=selectedCat
-  // รอ browser paint "กำลัง Generate..." ก่อน แล้วค่อย process
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  // setTimeout 100ms — ให้ browser paint "กำลัง Generate..." ก่อน process
+  setTimeout(() => {
     outputs.h2  =buildH2Output(activeH2,selectedCat)
     outputs.toc =buildTOCOutput(activeH2)
     outputs.full=buildFullOutput(document.getElementById('input-text').value,activeH2,selectedCat,outputs.toc)
@@ -534,7 +534,7 @@ function generate() {
     document.getElementById('btn-gen').classList.remove('needs-regen')
     switchTab(activeTab)
     showToast('สร้าง TOC สำเร็จแล้ว!')
-  }))
+  }, 100)
 }
 
 function switchTab(tab) {

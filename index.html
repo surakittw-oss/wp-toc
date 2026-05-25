@@ -517,11 +517,13 @@ function toggleRemove(idx) {
 
 function generate() {
   const activeH2=detectedH2.filter((_,i)=>!removedSet.has(i)); if(!activeH2.length) return
-  // แสดง "กำลัง Generate..." ก่อน แล้วให้ browser paint 1 frame
+  // disable ปุ่มทันที + เปลี่ยน label — ผู้ใช้เห็นก่อน JS process แน่นอน
+  const btn = document.getElementById('btn-gen')
+  btn.disabled = true
+  btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลัง Generate...'
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent='กำลัง Generate...'
   document.getElementById('status-cat').textContent=selectedCat
-  // setTimeout 100ms — ให้ browser paint "กำลัง Generate..." ก่อน process
   setTimeout(() => {
     outputs.h2  =buildH2Output(activeH2,selectedCat)
     outputs.toc =buildTOCOutput(activeH2)
@@ -532,9 +534,12 @@ function generate() {
     document.getElementById('status-text').textContent=`✓ Code พร้อมแล้ว · ${activeH2.length} หัวข้อ`
     lastGenCat = selectedCat
     document.getElementById('btn-gen').classList.remove('needs-regen')
+    // คืนปุ่ม Generate กลับปกติ
+    btn.disabled = false
+    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate TOC + H2'
     switchTab(activeTab)
-    showToast('สร้าง TOC สำเร็จแล้ว!')
-  }, 100)
+    showToast('✓ Code พร้อมแล้ว!')
+  }, 0)
 }
 
 function switchTab(tab) {

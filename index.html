@@ -537,15 +537,16 @@ function generate() {
     setTimeout(() => {
       outputs.full = buildFullOutput(document.getElementById('input-text').value, activeH2, selectedCat, outputs.toc)
 
-      // step 4: update UI
+      // step 4: update UI — query ปุ่มใหม่เพื่อหลีกเลี่ยง stale reference
+      const btnFinal = document.getElementById('btn-gen')
       document.getElementById('empty-state').style.display='none'
       document.getElementById('tab-row').style.display='flex'
       document.getElementById('btn-copy-all').style.display='flex'
       document.getElementById('status-text').textContent=`✓ Code พร้อมแล้ว · ${activeH2.length} หัวข้อ`
       lastGenCat = selectedCat
-      btn.classList.remove('needs-regen')
-      btn.disabled = false
-      btn.innerHTML = BOLT + ' Generate TOC + H2'
+      btnFinal.classList.remove('needs-regen')
+      btnFinal.disabled = false
+      btnFinal.innerHTML = BOLT + ' Generate TOC + H2'
       switchTab(activeTab)
       showToast('✓ Code พร้อมแล้ว!')
     }, 0)

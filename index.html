@@ -523,9 +523,11 @@ function generate() {
   const BOLT = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
 
   const btn = document.getElementById('btn-gen')
-  btn.style.opacity = '0.6'
-  btn.style.pointerEvents = 'none'
-  btn.innerHTML = SPIN + ' กำลัง Generate...'
+  // ล้าง output เดิมทันที ก่อน process
+  outputs = { h2:'', toc:'', full:'' }
+  document.getElementById('tab-row').style.display='none'
+  document.getElementById('btn-copy-all').style.display='none'
+  document.getElementById('output-body').innerHTML=`<div class="empty" id="empty-state"><div class="empty-icon" style="animation:pulse 1s ease-in-out infinite">⟳</div><div>กำลัง Generate...</div><small>รอสักครู่</small></div>`
   document.getElementById('status-bar').style.display='flex'
   document.getElementById('status-text').textContent='กำลัง Generate...'
   document.getElementById('status-cat').textContent=selectedCat
@@ -536,12 +538,7 @@ function generate() {
     outputs.full = buildFullOutput(document.getElementById('input-text').value, activeH2, selectedCat, outputs.toc)
     lastGenCat   = selectedCat
 
-    // คืนปุ่มทันที
-    const b = document.getElementById('btn-gen')
-    b.style.opacity = ''
-    b.style.pointerEvents = ''
-    b.innerHTML = BOLT + ' Generate TOC + H2'
-    b.classList.remove('needs-regen')
+    document.getElementById('btn-gen').classList.remove('needs-regen')
 
     document.getElementById('status-text').textContent=`✓ Code พร้อมแล้ว · ${activeH2.length} หัวข้อ`
     document.getElementById('status-cat').textContent=selectedCat

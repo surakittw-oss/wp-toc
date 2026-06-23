@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23e62227'/><text x='50%25' y='54%25' font-size='20' text-anchor='middle' dominant-baseline='middle' fill='white' font-weight='bold'>T</text></svg>">
-
 <title>Web TOC Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- [จุดที่ 1] Google Identity Services -->
@@ -425,7 +423,7 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
   text = text.replace(/<img[^>]*\/?>/gi, m => { const k=`%%M_${mi++}%%`; mediaMap[k]=m; return k })
   activeHeadings.forEach((h,i) => {
     const tag = `%%H${i+1}%%<h2 id="section${i+1}" style="${style}">${h}</h2>%%H${i+1}E%%`
-    const esc = h.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/'/g,"['']").replace(/"/g,'[""\u201c\u201d]').replace(/\?/g,'\\?')
+    const esc = h.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/'/g,"['‘’]").replace(/"/g,'["“”]')
     text = text.replace(new RegExp(`^#{1,2}\\s+${esc}\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^\\*\\*${esc}\\*\\*\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<strong>${esc}<\\/strong>\\s*$`,'gm'),tag)

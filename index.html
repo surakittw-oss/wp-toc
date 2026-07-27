@@ -204,6 +204,14 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
           <textarea id="input-text" placeholder="วิธีที่ 1 — ตัวเลข + หัวข้อ (แนะนำ):&#10;1. Apple iPhone 17 มีอะไรใหม่&#10;2. ราคาและวันวางจำหน่าย&#10;&#10;วิธีที่ 2 — เว้นบรรทัดว่างทั้งสองด้าน:&#10;&#10;Apple iPhone 17 มีอะไรใหม่&#10;&#10;วิธีที่ 3 — ## หรือ &lt;h2&gt;:&#10;## Apple iPhone 17 มีอะไรใหม่&#10;&#10;วิธีที่ 4 — วางบทความเต็มที่มี &lt;h2&gt; หรือ img/iframe"></textarea>
           <div class="char-row"><span id="char-count">0 ตัวอักษร</span><span>วาง HTML จาก WordPress ได้เลย</span></div>
         </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="lbl">หัวข้อ TOC</div>
+          <input class="fi" id="toc-title" type="text" placeholder="ประเด็นสำคัญ" value="ประเด็นสำคัญ" oninput="onTocTitleChange()">
+          <div style="display:flex;gap:6px">
+            <button class="rbtn" onclick="setTocTitle('ประเด็นสำคัญ')">ไทย</button>
+            <button class="rbtn" onclick="setTocTitle('Key Points')">English</button>
+          </div>
+        </div>
         <div id="h2-preview" style="display:none">
           <div class="lbl" style="margin-bottom:8px">H2 ที่ตรวจพบ</div>
           <div style="display:flex;flex-direction:column;gap:7px" id="h2-list"></div>
@@ -357,6 +365,7 @@ function extractH2(text) {
   }
   const hasMarkdown = lines.some(l => /^#{1,2}\s+.+/.test(l.trim()))
   const hasHTML     = lines.some(l => /<h2[^>]*>(?:<(?:b|strong)[^>]*>)?[^<]+(?:<\/(?:b|strong)>)?<\/h2>/i.test(l.trim()))
+  const hasPBold    = lines.some(l => /^<p[^>]*><(?:b|strong)[^>]*>[^<]+<\/(?:b|strong)><\/p>$/i.test(l.trim()))
   const hasBold     = lines.some(l => { const t=l.trim(); return /^\*\*[^*]+\*\*$/.test(t)||/^<strong>[^<]+<\/strong>$/.test(t)||/^<b>[^<]+<\/b>$/.test(t) })
   const nonEmpty    = lines.filter(l=>l.trim())
   const allNumbered = nonEmpty.length>=2 && nonEmpty.every(l=>/^\d+\.\s+.{2,}/.test(l.trim()))
@@ -365,6 +374,12 @@ function extractH2(text) {
       const t=line.trim()
       const m1=t.match(/^#{1,2}\s+(.+)$/); if(m1){result.push(m1[1].trim());continue}
       const m2=t.match(/<h2[^>]*>(?:<(?:b|strong)[^>]*>)?([^<]+)(?:<\/(?:b|strong)>)?<\/h2>/i); if(m2){result.push(m2[1].trim());continue}
+    }
+  } else if (hasPBold) {
+    for (const line of lines) {
+      const t=line.trim()
+      const m=t.match(/^<p[^>]*><(?:b|strong)[^>]*>([^<]+)<\/(?:b|strong)><\/p>$/i)
+      if(m&&!isNoise(m[1].trim())) result.push(m[1].trim())
     }
   } else if (hasBold) {
     for (const line of lines) {
@@ -395,7 +410,8 @@ function buildH2Output(headings, cat) {
   return headings.map((h,i)=>`<h2 id="section${i+1}" style="${STYLES[cat]}">${h}</h2>`).join('\n\n')
 }
 
-function buildTOCOutput(headings) {
+function buildTOCOutput(headings, tocTitle) {
+  const title = (tocTitle && tocTitle.trim()) || 'ประเด็นสำคัญ'
   const items = headings.map((h,i)=>`    <li style="margin:8px 0; overflow-wrap: break-word; word-break: normal;"><a href="#section${i+1}">${h}</a></li>`).join('\n')
   return `<div style="
   background: #fff;
@@ -405,7 +421,7 @@ function buildTOCOutput(headings) {
   max-width: 600px;
 ">
   <div style="margin-bottom: 12px;">
-    <h2 style="font-size: 22px; font-weight: 700;">ประเด็นสำคัญ</h2>
+    <h2 style="font-size: 22px; font-weight: 700;">${escHtml(title)}</h2>
     <div style="height: 6px; background-color: #e62227; margin-top: 6px; width: 100%;"></div>
   </div>
   <ul style="padding-left: 20px; margin: 0; list-style: disc;">
@@ -535,7 +551,7 @@ function generate() {
 
   setTimeout(() => {
     outputs.h2   = buildH2Output(activeH2, selectedCat)
-    outputs.toc  = buildTOCOutput(activeH2)
+    outputs.toc  = buildTOCOutput(activeH2, document.getElementById('toc-title').value)
     outputs.full = buildFullOutput(document.getElementById('input-text').value, activeH2, selectedCat, outputs.toc)
     lastGenCat   = selectedCat
 
@@ -591,6 +607,10 @@ function showToast(msg){
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200)
 }
 function escHtml(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function setTocTitle(title) {
+  document.getElementById('toc-title').value = title
+}
 
 function clearAll() {
   // clear input

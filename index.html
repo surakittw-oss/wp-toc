@@ -149,6 +149,13 @@ input[type="color"]{width:32px;height:32px;border:1px solid var(--border);border
 .rbtn{flex:1;padding:7px 4px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--tx2);font-size:11px;font-family:var(--sans);cursor:pointer;transition:all .15s;text-align:center}
 .rbtn:hover{border-color:var(--border2);color:var(--tx);background:var(--card)}
 .rbtn.active{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.toggle-sw{position:relative;width:38px;height:22px;flex-shrink:0}
+.toggle-sw input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border2);border-radius:22px;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle-sw input:checked + .toggle-slider{background:var(--red)}
+.toggle-sw input:checked + .toggle-slider::before{transform:translateX(16px)}
 .prev-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:20px 16px;display:flex;align-items:center;justify-content:center;min-height:72px}
 .code-out-btn{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:13px 15px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);line-height:1.7;word-break:break-all;flex:1;min-height:72px}
 .btng-action{width:100%;padding:12px;background:var(--red);border:none;border-radius:var(--r-md);color:#fff;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px}
@@ -211,6 +218,13 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
             <button class="rbtn" onclick="setTocTitle('ประเด็นสำคัญ')">ไทย</button>
             <button class="rbtn" onclick="setTocTitle('Key Point')">English</button>
           </div>
+        </div>
+        <div class="toggle-row">
+          <span class="lbl" style="margin-bottom:0">รวม TOC Block ใน "บทความรวม"</span>
+          <label class="toggle-sw">
+            <input type="checkbox" id="toggle-toc" checked>
+            <span class="toggle-slider"></span>
+          </label>
         </div>
         <div id="h2-preview" style="display:none">
           <div class="lbl" style="margin-bottom:8px">H2 ที่ตรวจพบ</div>
@@ -430,7 +444,7 @@ ${items}
 </div>`
 }
 
-function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
+function buildFullOutput(originalText, activeHeadings, cat, tocHtml, includeToc) {
   if (!originalText.trim()) return ''
   const style = STYLES[cat]
   const isHTML = /<(span|p|div|strong|b|h[1-6]|ul|li|br|img|figure|picture|iframe)\s*[^>]*>/i.test(originalText)
@@ -482,7 +496,9 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml) {
       break
     }
   }
-  lines.splice(insertIdx,0,'&nbsp;',tocHtml,'&nbsp;')
+  if (includeToc) {
+    lines.splice(insertIdx,0,'&nbsp;',tocHtml,'&nbsp;')
+  }
   return lines.join('\n')
 }
 
@@ -552,7 +568,7 @@ function generate() {
   setTimeout(() => {
     outputs.h2   = buildH2Output(activeH2, selectedCat)
     outputs.toc  = buildTOCOutput(activeH2, document.getElementById('toc-title').value)
-    outputs.full = buildFullOutput(document.getElementById('input-text').value, activeH2, selectedCat, outputs.toc)
+    outputs.full = buildFullOutput(document.getElementById('input-text').value, activeH2, selectedCat, outputs.toc, document.getElementById('toggle-toc').checked)
     lastGenCat   = selectedCat
 
     document.getElementById('btn-gen').classList.remove('needs-regen')
@@ -580,7 +596,9 @@ function switchTab(tab) {
   } else if(tab==='toc'){
     body.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="code-lbl">TOC Block — วางบนสุดของบทความ</span>${cpBtn}</div><div class="code-out">${fmt(outputs.toc)}</div><p style="font-size:11px;color:var(--tx3);margin-top:8px">วาง code นี้ก่อนย่อหน้าแรกของบทความ</p>`
   } else if(tab==='full'){
-    body.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="code-lbl">บทความรวม — TOC + เนื้อหา + H2 replace</span>${cpBtn}</div><div class="code-out">${fmt(outputs.full)}</div><p style="font-size:11px;color:var(--tx3);margin-top:8px">TOC อยู่หลังย่อหน้าแรก · img/iframe คงอยู่ · วางลง Classic Editor ได้เลย</p>`
+    const tocIncluded = document.getElementById('toggle-toc').checked
+    const tocNote = tocIncluded ? 'TOC อยู่หลังย่อหน้าแรก · ' : '(ไม่รวม TOC Block) · '
+    body.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="code-lbl">บทความรวม — ${tocIncluded ? 'TOC + ' : ''}เนื้อหา + H2 replace</span>${cpBtn}</div><div class="code-out">${fmt(outputs.full)}</div><p style="font-size:11px;color:var(--tx3);margin-top:8px">${tocNote}img/iframe คงอยู่ · วางลง Classic Editor ได้เลย</p>`
   } else if(tab==='guide'){
     body.innerHTML=`<span class="code-lbl" style="display:block;margin-bottom:12px">วิธีใช้งานใน WordPress Classic Editor</span>
     <div class="steps">

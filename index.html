@@ -472,6 +472,8 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml, includeToc)
     text = text.replace(new RegExp(`^<strong>${esc}<\\/strong>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<b>${esc}<\\/b>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^<h2[^>]*><(?:b|strong)[^>]*>\\s*${esc}\\s*<\\/(?:b|strong)>\\s*<\\/h2>\\s*$`,'gm'),tag)
+    // <h2>text</h2> ธรรมดา ไม่มี b/strong ครอบ
+    text = text.replace(new RegExp(`^<h2[^>]*>\\s*${esc}\\s*<\\/h2>\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^\\d+\\.\\s+${esc}\\s*$`,'gm'),tag)
     text = text.replace(new RegExp(`^${esc}\\s*$`,'gm'),tag)
   })

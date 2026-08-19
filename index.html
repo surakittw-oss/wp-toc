@@ -330,6 +330,10 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Copy Code
         </button>
+        <button class="btn-clear" onclick="clearBtnGen()" style="display:flex">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          Clear ทั้งหมด
+        </button>
       </div>
       <div class="btng-right">
         <div><div class="fl" style="margin-bottom:8px">Preview</div><div class="prev-wrap" id="btn-preview-wrap"><a id="btn-preview" style="display:inline-block;padding:7px 14px;font-size:15px;color:#fff;background:#e62227;border-radius:980px;text-decoration:none;font-weight:500;cursor:pointer" href="#" onclick="return false">คลิก ›</a></div></div>
@@ -360,6 +364,10 @@ const STYLES = {
   'The Secret Sauce': 'border-left: 13px solid #ffcd00; padding-left: 15px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 10px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); color: #000;'
 }
 
+const ACCENT_COLORS = {
+  'NEWS':'#e62227','POP':'#0000ff','WEALTH':'#c19380',
+  'LIFE':'#000000','SPORT':'#ffa5f7','The Secret Sauce':'#ffcd00'
+}
 let selectedCat  = 'NEWS'
 let detectedH2   = []
 let removedSet   = new Set()
@@ -427,8 +435,9 @@ function buildH2Output(headings, cat) {
   return headings.map((h,i)=>`<h2 id="section${i+1}" style="${STYLES[cat]}">${h}</h2>`).join('\n\n')
 }
 
-function buildTOCOutput(headings, tocTitle) {
+function buildTOCOutput(headings, tocTitle, cat) {
   const title = (tocTitle && tocTitle.trim()) || 'ประเด็นสำคัญ'
+  const accent = ACCENT_COLORS[cat] || '#e62227'
   const items = headings.map((h,i)=>`    <li style="margin:8px 0; overflow-wrap: break-word; word-break: normal;"><a href="#section${i+1}">${h}</a></li>`).join('\n')
   return `<div style="
   background: #fff;
@@ -439,7 +448,7 @@ function buildTOCOutput(headings, tocTitle) {
 ">
   <div style="margin-bottom: 12px;">
     <h2 style="font-size: 22px; font-weight: 700;">${escHtml(title)}</h2>
-    <div style="height: 6px; background-color: #e62227; margin-top: 6px; width: 100%;"></div>
+    <div style="height: 6px; background-color: ${accent}; margin-top: 6px; width: 100%;"></div>
   </div>
   <ul style="padding-left: 20px; margin: 0; list-style: disc;">
 ${items}
@@ -570,7 +579,7 @@ function generate() {
 
   setTimeout(() => {
     outputs.h2   = buildH2Output(activeH2, selectedCat)
-    outputs.toc  = buildTOCOutput(activeH2, document.getElementById('toc-title').value)
+    outputs.toc  = buildTOCOutput(activeH2, document.getElementById('toc-title').value, selectedCat)
     outputs.full = buildFullOutput(document.getElementById('input-text').value, activeH2, selectedCat, outputs.toc, document.getElementById('toggle-toc').checked)
     lastGenCat   = selectedCat
 
@@ -716,6 +725,16 @@ function setColorCustom(hex){btnColor=hex;document.querySelectorAll('#color-pres
 function setTextColor(hex,el){btnTextColor=hex;document.getElementById('text-color-picker').value=hex;document.querySelectorAll('#text-color-presets .cdot').forEach(d=>d.classList.remove('active'));if(el)el.classList.add('active');previewBtn()}
 function setTextColorCustom(hex){btnTextColor=hex;document.querySelectorAll('#text-color-presets .cdot').forEach(d=>d.classList.toggle('active',d.dataset.color===hex));previewBtn()}
 function setRadius(r,el){btnRadius=r;document.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');previewBtn()}
+function clearBtnGen(){
+  document.getElementById('btn-text').value = 'คลิก ›'
+  document.getElementById('btn-url').value = ''
+  document.getElementById('btn-size').value = 15
+  setColor('#e62227', document.querySelector('#color-presets .cdot'))
+  setTextColor('#ffffff', document.querySelector('#text-color-presets .cdot'))
+  setRadius('980px', document.querySelectorAll('.rbtn')[2])
+  showToast('เคลียร์ Button Generator แล้ว!')
+}
+
 function copyBtnCode(){
   const text=document.getElementById('btn-text').value||'คลิก ›'
   const url=document.getElementById('btn-url').value.trim()||''

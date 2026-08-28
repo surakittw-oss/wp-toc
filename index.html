@@ -141,6 +141,13 @@ textarea::placeholder{color:var(--tx3);font-size:13px}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
 
 .btng-section{max-width:1280px;margin:0 auto;padding:24px 20px 48px}
+.link-section .page{padding:24px 20px 48px}
+.link-hit{background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.3);border-radius:8px;padding:7px 11px;display:flex;align-items:center;gap:9px;font-size:12px}
+.link-hit-txt{flex:1;color:var(--tx)}
+.link-hit-n{font-family:var(--mono);font-size:10px;color:var(--green);background:rgba(52,199,89,0.15);padding:2px 7px;border-radius:5px}
+.link-miss{background:rgba(230,34,39,0.07);border:1px solid var(--red-bd);border-radius:8px;padding:7px 11px;display:flex;align-items:center;gap:9px;font-size:12px}
+.link-miss-txt{flex:1;color:var(--tx2)}
+.link-miss-n{font-family:var(--mono);font-size:10px;color:var(--red);background:var(--red-bg);padding:2px 7px;border-radius:5px}
 .btng-grid{display:grid;grid-template-columns:1fr 1fr}
 .btng-left{padding:20px 22px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:14px}
 .btng-right{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
@@ -205,6 +212,10 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
   <button class="tool-tab" id="tool-tab-btn" onclick="switchTool('btn')">
     <span class="tool-tab-name">Button Generator</span>
     <span class="tool-tab-desc">สร้างปุ่ม HTML สำหรับ WordPress</span>
+  </button>
+  <button class="tool-tab" id="tool-tab-link" onclick="switchTool('link')">
+    <span class="tool-tab-name">Link Inserter</span>
+    <span class="tool-tab-desc">ฝัง link หลายจุดในบทความครั้งเดียว</span>
   </button>
 </div>
 
@@ -359,6 +370,77 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
         <div><div class="fl" style="margin-bottom:8px">Preview</div><div class="prev-wrap" id="btn-preview-wrap"><a id="btn-preview" style="display:inline-block;padding:7px 14px;font-size:15px;color:#fff;background:#e62227;border-radius:980px;text-decoration:none;font-weight:500;cursor:pointer" href="#" onclick="return false">คลิก ›</a></div></div>
         <div style="display:flex;flex-direction:column;gap:6px;flex:1"><div class="fl">HTML Code</div><div class="code-out-btn" id="btn-code-out"></div></div>
         <div style="font-size:11px;color:var(--tx3)">ใส่ลิงก์ → แก้ข้อความ → Copy Code → วางใน Classic Editor (Text mode)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LINK INSERTER -->
+<div class="link-section" style="display:none">
+  <div class="page">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Input</span>
+          <span id="link-count" style="font-family:var(--mono);font-size:10px;color:var(--tx3)">0 link</span>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="lbl">บทความ (HTML จาก WordPress)</div>
+            <textarea id="link-article" placeholder="วางบทความทั้งหมดที่นี่..." oninput="onLinkInput()"></textarea>
+            <div class="char-row"><span id="link-char">0 ตัวอักษร</span><span>วาง HTML ได้เลย</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="lbl">รายการ link — 1 บรรทัด = 1 link</div>
+            <textarea id="link-pairs" style="min-height:160px" placeholder="รูปแบบ: ข้อความ | URL&#10;&#10;บ้านเดี่ยว | https://thestandard.co/tag/บ้านเดี่ยว&#10;AP Thailand | https://thestandard.co/tag/ap&#10;Nature Architect | https://example.com" oninput="onLinkInput()"></textarea>
+            <div class="char-row"><span id="link-pairs-count">0 คู่</span><span>คั่นด้วย | (pipe)</span></div>
+          </div>
+          <div class="toggle-row">
+            <span class="lbl" style="margin-bottom:0">ใส่ link เฉพาะครั้งแรกที่เจอ</span>
+            <label class="toggle-sw">
+              <input type="checkbox" id="link-first-only" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span class="lbl" style="margin-bottom:0">เปิดใน tab ใหม่ (target="_blank")</span>
+            <label class="toggle-sw">
+              <input type="checkbox" id="link-new-tab" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="btn-sticky-wrap">
+            <button class="btn-gen" id="btn-link-gen" disabled onclick="generateLinks()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              ฝัง Link ทั้งหมด
+            </button>
+            <button class="btn-clear" id="btn-link-clear" onclick="clearLinks()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+              Clear ทั้งหมด
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="out-card">
+      <div class="card-head">
+        <span class="card-title">Output</span>
+        <button class="btn-cp" id="btn-link-copy" style="display:none" onclick="copyLinkOutput()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy บทความ
+        </button>
+      </div>
+      <div class="out-body" id="link-output-body">
+        <div class="empty">
+          <div class="empty-icon">🔗</div>
+          <div>วางบทความ + รายการ link</div>
+          <small>จากนั้นกด ฝัง Link ทั้งหมด</small>
+        </div>
+      </div>
+      <div class="status-bar" id="link-status-bar" style="display:none">
+        <span><span class="status-dot"></span><span id="link-status-text">พร้อมใช้งาน</span></span>
+        <span id="link-status-detail" style="color:var(--tx2)">—</span>
       </div>
     </div>
   </div>
@@ -661,11 +743,13 @@ function showToast(msg){
 function escHtml(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
 function switchTool(tool) {
-  const isToc = tool === 'toc'
-  document.querySelector('.page').style.display = isToc ? 'grid' : 'none'
-  document.querySelector('.btng-section').style.display = isToc ? 'none' : 'block'
-  document.getElementById('tool-tab-toc').classList.toggle('active', isToc)
-  document.getElementById('tool-tab-btn').classList.toggle('active', !isToc)
+  // page แรก = TOC (querySelector คืนตัวแรกซึ่งอยู่นอก link-section)
+  document.querySelector('.page').style.display        = tool === 'toc'  ? 'grid'  : 'none'
+  document.querySelector('.btng-section').style.display = tool === 'btn'  ? 'block' : 'none'
+  document.querySelector('.link-section').style.display = tool === 'link' ? 'block' : 'none'
+  document.getElementById('tool-tab-toc').classList.toggle('active',  tool === 'toc')
+  document.getElementById('tool-tab-btn').classList.toggle('active',  tool === 'btn')
+  document.getElementById('tool-tab-link').classList.toggle('active', tool === 'link')
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -720,6 +804,113 @@ document.getElementById('cat-grid').addEventListener('click', function(e){
   // แสดง H2 preview ใหม่ตาม style ที่เลือก
   showH2Preview()
 })
+
+// ══════════ LINK INSERTER ══════════
+let linkPairs = []
+let linkResult = ''
+
+function parseLinkPairs(raw) {
+  return raw.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+    const i = line.indexOf('|')
+    if (i < 0) return null
+    const text = line.slice(0, i).trim()
+    const url  = line.slice(i + 1).trim()
+    if (!text || !url) return null
+    return { text, url }
+  }).filter(Boolean)
+}
+
+function onLinkInput() {
+  const article = document.getElementById('link-article').value
+  const raw     = document.getElementById('link-pairs').value
+  linkPairs = parseLinkPairs(raw)
+  document.getElementById('link-char').textContent = article.length + ' ตัวอักษร'
+  document.getElementById('link-pairs-count').textContent = linkPairs.length + ' คู่'
+  document.getElementById('link-count').textContent = linkPairs.length + ' link'
+  document.getElementById('btn-link-gen').disabled = !(article.trim() && linkPairs.length)
+  document.getElementById('btn-link-clear').style.display =
+    (article.length || raw.length) ? 'flex' : 'none'
+}
+
+function generateLinks() {
+  const article = document.getElementById('link-article').value
+  if (!article.trim() || !linkPairs.length) return
+  const firstOnly = document.getElementById('link-first-only').checked
+  const newTab    = document.getElementById('link-new-tab').checked
+
+  document.getElementById('link-status-bar').style.display = 'flex'
+  document.getElementById('link-status-text').textContent = 'กำลังฝัง Link...'
+
+  setTimeout(() => {
+    let text = article
+    const safe = {}
+    let si = 0
+    // ป้องกัน: <a>...</a> เดิม, <h2>...</h2>, tag ทุกชนิด
+    text = text.replace(/<a\b[\s\S]*?<\/a>/gi, m => { const k=`\u0001S${si++}\u0001`; safe[k]=m; return k })
+    text = text.replace(/<h[1-6]\b[\s\S]*?<\/h[1-6]>/gi, m => { const k=`\u0001S${si++}\u0001`; safe[k]=m; return k })
+    text = text.replace(/<[^>]+>/g, m => { const k=`\u0001S${si++}\u0001`; safe[k]=m; return k })
+
+    const report = []
+    for (const { text: needle, url } of linkPairs) {
+      const esc = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const re  = new RegExp(esc, firstOnly ? '' : 'g')
+      const before = text
+      const anchor = newTab
+        ? `<a href="${url}" target="_blank" rel="noopener noreferrer">${needle}</a>`
+        : `<a href="${url}">${needle}</a>`
+      let count = 0
+      text = text.replace(re, () => { count++; return `\u0002${anchor}\u0002` })
+      // เอาเครื่องหมายกันซ้อนออก แล้วนับผล
+      if (count > 0) text = text.split('\u0002').join('')
+      else text = before
+      report.push({ needle, url, count })
+    }
+
+    for (const [k, v] of Object.entries(safe)) text = text.split(k).join(v)
+    linkResult = text
+
+    const hit  = report.filter(r => r.count > 0)
+    const miss = report.filter(r => r.count === 0)
+    const total = report.reduce((s, r) => s + r.count, 0)
+
+    document.getElementById('link-output-body').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span class="code-lbl">บทความที่ฝัง Link แล้ว</span>
+        <button class="btn-cp" onclick="copyLinkOutput()"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button>
+      </div>
+      <div class="code-out">${escHtml(linkResult).replace(/\n/g,'<br>')}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+        ${hit.map(r => `<div class="link-hit"><span class="link-hit-txt">${escHtml(r.needle)}</span><span class="link-hit-n">${r.count}\u00d7</span></div>`).join('')}
+        ${miss.map(r => `<div class="link-miss"><span class="link-miss-txt">${escHtml(r.needle)} — ไม่พบในบทความ</span><span class="link-miss-n">0</span></div>`).join('')}
+      </div>`
+
+    document.getElementById('btn-link-copy').style.display = 'flex'
+    document.getElementById('link-status-text').textContent = `\u2713 ฝัง Link แล้ว \u00b7 ${total} จุด`
+    document.getElementById('link-status-detail').textContent =
+      miss.length ? `${miss.length} รายการไม่พบ` : 'ครบทุกรายการ'
+    showToast(`\u2713 ฝัง Link แล้ว ${total} จุด!`)
+  }, 0)
+}
+
+function copyLinkOutput() {
+  navigator.clipboard.writeText(linkResult).then(() => showToast('Copied บทความแล้ว!'))
+}
+
+function clearLinks() {
+  document.getElementById('link-article').value = ''
+  document.getElementById('link-pairs').value = ''
+  linkPairs = []; linkResult = ''
+  document.getElementById('link-char').textContent = '0 ตัวอักษร'
+  document.getElementById('link-pairs-count').textContent = '0 คู่'
+  document.getElementById('link-count').textContent = '0 link'
+  document.getElementById('btn-link-gen').disabled = true
+  document.getElementById('btn-link-clear').style.display = 'none'
+  document.getElementById('btn-link-copy').style.display = 'none'
+  document.getElementById('link-status-bar').style.display = 'none'
+  document.getElementById('link-output-body').innerHTML =
+    '<div class="empty"><div class="empty-icon">\ud83d\udd17</div><div>วางบทความ + รายการ link</div><small>จากนั้นกด ฝัง Link ทั้งหมด</small></div>'
+  document.getElementById('link-article').focus()
+}
 
 // DARK MODE
 const THEME_KEY = 'toc_theme'

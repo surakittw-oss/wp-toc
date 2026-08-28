@@ -48,6 +48,15 @@ body.dark .hd-theme:hover{background:rgba(255,255,255,0.08)}
 .hd-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1.5px solid var(--border2);flex-shrink:0}
 
 .page{max-width:1280px;margin:0 auto;padding:24px 20px 48px;display:grid;grid-template-columns:420px 1fr;gap:16px;align-items:start}
+/* TOOL SWITCHER */
+.tool-bar{max-width:1280px;margin:0 auto;padding:20px 20px 0;display:flex;gap:36px;border-bottom:1px solid var(--border)}
+.tool-tab{background:none;border:none;padding:0 0 14px;cursor:pointer;font-family:var(--sans);text-align:left;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tool-tab-name{display:block;font-size:15px;font-weight:600;color:var(--tx2);letter-spacing:-0.2px;transition:color .15s}
+.tool-tab-desc{display:block;font-size:11px;color:var(--tx3);margin-top:3px}
+.tool-tab:hover .tool-tab-name{color:var(--tx)}
+.tool-tab.active{border-bottom-color:var(--red)}
+.tool-tab.active .tool-tab-name{color:var(--red)}
+@media(max-width:768px){.tool-bar{padding:14px 16px 0;gap:20px;overflow-x:auto}.tool-tab-desc{display:none}}
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--sh);overflow:hidden}
 .card-head{padding:15px 22px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
@@ -131,7 +140,7 @@ textarea::placeholder{color:var(--tx3);font-size:13px}
 .status-bar{padding:8px 22px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--tx3)}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
 
-.btng-section{max-width:1280px;margin:0 auto;padding:0 20px 40px}
+.btng-section{max-width:1280px;margin:0 auto;padding:24px 20px 48px}
 .btng-grid{display:grid;grid-template-columns:1fr 1fr}
 .btng-left{padding:20px 22px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:14px}
 .btng-right{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
@@ -187,6 +196,17 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
     <button class="hd-logout" id="hd-logout" style="display:none" onclick="logout()">ออกจากระบบ</button>
   </div>
 </header>
+
+<div class="tool-bar">
+  <button class="tool-tab active" id="tool-tab-toc" onclick="switchTool('toc')">
+    <span class="tool-tab-name">TOC Generator</span>
+    <span class="tool-tab-desc">สร้างสารบัญ + H2 style ตามหมวด</span>
+  </button>
+  <button class="tool-tab" id="tool-tab-btn" onclick="switchTool('btn')">
+    <span class="tool-tab-name">Button Generator</span>
+    <span class="tool-tab-desc">สร้างปุ่ม HTML สำหรับ WordPress</span>
+  </button>
+</div>
 
 <div class="page">
   <div style="display:flex;flex-direction:column;gap:12px">
@@ -278,7 +298,7 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
   </div>
 </div>
 
-<div class="btng-section">
+<div class="btng-section" style="display:none">
   <div class="card">
     <div class="card-head">
       <span class="card-title">Button Generator</span>
@@ -639,6 +659,15 @@ function showToast(msg){
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200)
 }
 function escHtml(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function switchTool(tool) {
+  const isToc = tool === 'toc'
+  document.querySelector('.page').style.display = isToc ? 'grid' : 'none'
+  document.querySelector('.btng-section').style.display = isToc ? 'none' : 'block'
+  document.getElementById('tool-tab-toc').classList.toggle('active', isToc)
+  document.getElementById('tool-tab-btn').classList.toggle('active', !isToc)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 function setTocTitle(title) {
   document.getElementById('toc-title').value = title

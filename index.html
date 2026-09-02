@@ -393,8 +393,8 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
           </div>
           <div style="display:flex;flex-direction:column;gap:6px">
             <div class="lbl">รายการ link — 1 บรรทัด = 1 link</div>
-            <textarea id="link-pairs" style="min-height:160px" placeholder="รูปแบบ: ข้อความ | URL&#10;&#10;บ้านเดี่ยว | https://thestandard.co/tag/บ้านเดี่ยว&#10;AP Thailand | https://thestandard.co/tag/ap&#10;Nature Architect | https://example.com" oninput="onLinkInput()"></textarea>
-            <div class="char-row"><span id="link-pairs-count">0 คู่</span><span>คั่นด้วย | (pipe)</span></div>
+            <textarea id="link-pairs" style="min-height:160px" placeholder="รองรับ 2 รูปแบบ:&#10;&#10;ข้อความ: https://example.com&#10;ข้อความ | https://example.com&#10;&#10;ตัวอย่าง&#10;Turkey Gears Up To Host IMF-World Bank Meetings: https://www.imf.org/en/News/Articles/2015/09/28/04/53/sonew071009a&#10;MICE ไม่ได้แปลว่าหนู: https://elibrary.tceb.or.th/th/Publication/5750" oninput="onLinkInput()"></textarea>
+            <div class="char-row"><span id="link-pairs-count">0 คู่</span><span>คั่นด้วย : หรือ |</span></div>
           </div>
           <div class="toggle-row">
             <span class="lbl" style="margin-bottom:0">ใส่ link เฉพาะครั้งแรกที่เจอ</span>
@@ -812,11 +812,23 @@ let linkResult = ''
 
 function parseLinkPairs(raw) {
   return raw.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
-    const i = line.indexOf('|')
-    if (i < 0) return null
-    const text = line.slice(0, i).trim()
-    const url  = line.slice(i + 1).trim()
+    let text = '', url = ''
+    // รูปแบบ 1: ข้อความ | URL
+    const p = line.indexOf('|')
+    if (p >= 0) {
+      text = line.slice(0, p).trim()
+      url  = line.slice(p + 1).trim()
+    } else {
+      // รูปแบบ 2: ข้อความ: URL — หา URL จากท้ายบรรทัด (URL มี : ในตัวเอง)
+      const m = line.match(/^(.*?)[:\uff1a]\s*(https?:\/\/\S+)\s*$/)
+      if (m) { text = m[1].trim(); url = m[2].trim() }
+    }
     if (!text || !url) return null
+    // ตัดวงเล็บที่ค้างท้ายข้อความ เช่น "ชื่อ (หมายเหตุ" -> "ชื่อ"
+    const open = (text.match(/\(/g) || []).length
+    const close = (text.match(/\)/g) || []).length
+    if (open > close) text = text.slice(0, text.lastIndexOf('(')).trim()
+    if (!text) return null
     return { text, url }
   }).filter(Boolean)
 }

@@ -559,11 +559,18 @@ ${items}
 </div>`
 }
 
+// ลบ TOC block เดิมที่ระบบเคยสร้างไว้ (กันซ้ำตอน re-generate)
+function removeOldToc(text) {
+  // จับ <div> ที่มีลายเซ็น box-shadow ของ TOC block + ul ข้างใน
+  const re = /<div style="[^"]*box-shadow:\s*0 10px 25px rgba\(0,0,0,0\.12\)[\s\S]*?<\/ul>\s*<\/div>/gi
+  return text.replace(re, '\u0003OLDTOC\u0003')
+}
+
 function buildFullOutput(originalText, activeHeadings, cat, tocHtml, includeToc) {
   if (!originalText.trim()) return ''
   const style = STYLES[cat]
   const isHTML = /<(span|p|div|strong|b|h[1-6]|ul|li|br|img|figure|picture|iframe)\s*[^>]*>/i.test(originalText)
-  let text = originalText
+  let text = removeOldToc(originalText)
   const mediaMap = {}; let mi = 0
   text = text.replace(/<iframe[\s\S]*?<\/iframe>/gi, m => { const k=`%%M_${mi++}%%`; mediaMap[k]=m; return k })
   text = text.replace(/<img[^>]*\/?>/gi, m => { const k=`%%M_${mi++}%%`; mediaMap[k]=m; return k })
@@ -604,6 +611,12 @@ function buildFullOutput(originalText, activeHeadings, cat, tocHtml, includeToc)
   }
   for (const [k,v] of Object.entries(mediaMap)) text=text.split(k).join(v)
   text=text.replace(/(&nbsp;\s*\n\s*){2,}/g,'&nbsp;\n')
+  // ถ้าเจอ TOC เดิม — วาง TOC ใหม่ตำแหน่งเดิม ไม่ต้องคำนวณใหม่
+  if (text.includes('\u0003OLDTOC\u0003')) {
+    text = text.replace(/\u0003OLDTOC\u0003/g, includeToc ? tocHtml : '')
+    text = text.replace(/(&nbsp;\s*\n\s*){2,}/g,'&nbsp;\n')
+    return text
+  }
   const lines=text.split('\n'); let insertIdx=lines.length
   for (let i=0;i<lines.length;i++) {
     const t=lines[i].trim()

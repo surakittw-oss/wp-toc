@@ -66,7 +66,7 @@ body.dark .hd-theme:hover{background:rgba(255,255,255,0.08)}
 
 .lbl{font-size:11px;font-weight:600;color:var(--tx2);letter-spacing:0.3px;margin-bottom:8px}
 .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cat-btn{padding:10px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);color:var(--tx2);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s ease;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;overflow:hidden}
+.cat-btn{padding:13px 8px;min-height:52px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);color:var(--tx2);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden}
 .cat-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--cat-color,var(--border));transform:scaleX(0);transform-origin:center;transition:transform .2s ease}
 .cat-btn:hover{background:var(--card);border-color:var(--border2);color:var(--tx)}
 .cat-btn:hover::after{transform:scaleX(.5)}
@@ -86,24 +86,24 @@ textarea::placeholder{color:var(--tx3);font-size:13px}
 .h2-chip.removed .h2-num{color:var(--tx3)}
 .h2-text{font-size:12px;color:var(--tx);flex:1}
 .h2-id{font-family:var(--mono);font-size:10px;color:var(--tx3);background:rgba(0,0,0,0.04);padding:2px 7px;border-radius:6px}
-.btn-remove{width:20px;height:20px;border-radius:50%;border:1px solid var(--border2);background:transparent;color:var(--tx3);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.btn-remove{width:32px;height:32px;border-radius:50%;border:1px solid var(--border2);background:transparent;color:var(--tx3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
 .btn-remove:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
 
-.btn-gen{width:100%;padding:13px;background:var(--red);border:none;border-radius:var(--r-md);color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .18s ease;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-gen{width:100%;padding:15px;min-height:50px;background:var(--red);border:none;border-radius:var(--r-md);color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .18s ease;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-gen:hover:not(:disabled){background:#c91e23;transform:translateY(-1px);box-shadow:0 6px 20px rgba(230,34,39,0.3)}
 .btn-gen:disabled{background:var(--tx3);cursor:not-allowed;transform:none;box-shadow:none}
 .btn-gen.needs-regen{animation:needsRegen 1.5s ease-in-out infinite}
 @keyframes needsRegen{0%,100%{box-shadow:0 0 0 0 rgba(230,34,39,0.4)}50%{box-shadow:0 0 0 6px rgba(230,34,39,0)}}
 .out-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column}
 .out-body{padding:20px 22px;flex:1;display:flex;flex-direction:column;gap:14px}
-.btn-clear{width:100%;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-md);color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:none;align-items:center;justify-content:center;gap:7px}
+.btn-clear{width:100%;padding:13px;min-height:46px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-md);color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:none;align-items:center;justify-content:center;gap:7px}
 .btn-clear:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
 .btn-clear{width:100%;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-md);color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s ease;display:none;align-items:center;justify-content:center;gap:7px}
 .btn-clear:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
 
 .out-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column;height:100%}
 .tab-row{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tab{padding:12px 18px;font-size:12px;font-weight:500;color:var(--tx2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;font-family:var(--sans)}
+.tab{padding:15px 20px;min-height:48px;font-size:13px;font-weight:500;color:var(--tx2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;font-family:var(--sans)}
 .tab:hover{color:var(--tx)}
 .tab.active{color:var(--red);border-bottom-color:var(--red)}
 .out-body{padding:20px 22px;flex:1;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
@@ -116,7 +116,7 @@ textarea::placeholder{color:var(--tx3);font-size:13px}
 .code-out{flex:none;height:400px;min-height:120px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--tx2);padding:14px 16px;word-break:break-word;overflow-y:auto;resize:vertical}
 .code-out::-webkit-resizer{background:transparent}
 
-.btn-cp{padding:6px 14px;border:1px solid var(--border2);border-radius:8px;background:transparent;color:var(--tx2);font-size:12px;font-weight:500;font-family:var(--sans);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn-cp{padding:10px 16px;min-height:38px;border:1px solid var(--border2);border-radius:8px;background:transparent;color:var(--tx2);font-size:12px;font-weight:500;font-family:var(--sans);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
 .btn-cp:hover{border-color:var(--green);color:var(--green);background:rgba(52,199,89,0.06)}
 
 .steps{display:flex;flex-direction:column;gap:9px}
@@ -166,13 +166,13 @@ input[type="color"]{width:32px;height:32px;border:1px solid var(--border);border
 .rbtn{flex:1;padding:7px 4px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--tx2);font-size:11px;font-family:var(--sans);cursor:pointer;transition:all .15s;text-align:center}
 .rbtn:hover{border-color:var(--border2);color:var(--tx);background:var(--card)}
 .rbtn.active{border-color:var(--red);color:var(--red);background:var(--red-bg)}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.toggle-sw{position:relative;width:38px;height:22px;flex-shrink:0}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;padding:6px 0;min-height:40px}
+.toggle-sw{position:relative;width:44px;height:26px;flex-shrink:0}
 .toggle-sw input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border2);border-radius:22px;transition:.2s}
-.toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
 .toggle-sw input:checked + .toggle-slider{background:var(--red)}
-.toggle-sw input:checked + .toggle-slider::before{transform:translateX(16px)}
+.toggle-sw input:checked + .toggle-slider::before{transform:translateX(18px)}
 .btn-sticky-wrap{position:sticky;bottom:0;background:var(--card);padding-top:8px;margin-top:-8px;display:flex;flex-direction:column;gap:10px;z-index:5}
 .prev-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:20px 16px;display:flex;align-items:center;justify-content:center;min-height:72px}
 .code-out-btn{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:13px 15px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);line-height:1.7;word-break:break-all;flex:1;min-height:72px}
@@ -185,8 +185,8 @@ input[type="color"]{width:32px;height:32px;border:1px solid var(--border);border
 footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify-content:space-between;font-size:11px;color:var(--tx3);font-family:var(--mono)}
 
 @media(max-width:1024px){.page{grid-template-columns:1fr;padding:16px 16px 36px}.btng-grid{grid-template-columns:1fr}.btng-left{border-right:none;border-bottom:1px solid var(--border)}}
-@media(max-width:768px){header{padding:0 16px}.hd-tag{display:none}.page{padding:12px 12px 28px;gap:12px}.card-body,.out-body{padding:16px;gap:12px}.cat-grid{grid-template-columns:repeat(3,1fr)}.tab{padding:10px 13px;font-size:11px}footer{flex-direction:column;gap:4px;text-align:center}.btng-section{padding:0 12px 28px}.btng-left,.btng-right{padding:14px}}
-@media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr)}textarea{min-height:180px}}
+@media(max-width:768px){header{padding:0 16px}.hd-tag{display:none}.page{padding:12px 12px 28px;gap:12px}.card-body,.out-body{padding:16px;gap:12px}.cat-grid{grid-template-columns:repeat(3,1fr)}.tab{padding:14px 16px;min-height:48px;font-size:12px}footer{flex-direction:column;gap:4px;text-align:center}.btng-section{padding:0 12px 28px}.btng-left,.btng-right{padding:14px}}
+@media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr)}.cat-btn{min-height:54px}textarea{min-height:180px}}
 </style>
 </head>
 <body>
@@ -252,13 +252,13 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
             <button class="rbtn" onclick="setTocTitle('Key Point')">English</button>
           </div>
         </div>
-        <div class="toggle-row">
+        <label class="toggle-row">
           <span class="lbl" style="margin-bottom:0">รวม TOC Block ใน "บทความรวม"</span>
-          <label class="toggle-sw">
+          <span class="toggle-sw">
             <input type="checkbox" id="toggle-toc" checked>
             <span class="toggle-slider"></span>
-          </label>
-        </div>
+          </span>
+        </label>
         <div id="h2-preview" style="display:none">
           <div class="lbl" style="margin-bottom:8px">H2 ที่ตรวจพบ</div>
           <div style="display:flex;flex-direction:column;gap:7px" id="h2-list"></div>

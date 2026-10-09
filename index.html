@@ -240,13 +240,8 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px">
-          <div class="lbl">วางบทความ หรือพิมพ์หัวข้อ H2</div>
-          <textarea id="input-text" placeholder="วิธีที่ 1 — ตัวเลข + หัวข้อ (แนะนำ):&#10;1. Apple iPhone 17 มีอะไรใหม่&#10;2. ราคาและวันวางจำหน่าย&#10;&#10;วิธีที่ 2 — เว้นบรรทัดว่างทั้งสองด้าน:&#10;&#10;Apple iPhone 17 มีอะไรใหม่&#10;&#10;วิธีที่ 3 — ## หรือ &lt;h2&gt;:&#10;## Apple iPhone 17 มีอะไรใหม่&#10;&#10;วิธีที่ 4 — วางบทความเต็มที่มี &lt;h2&gt; หรือ img/iframe"></textarea>
-          <div class="char-row"><span id="char-count">0 ตัวอักษร</span><span>วาง HTML จาก WordPress ได้เลย</span></div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
           <div class="lbl">หัวข้อ TOC</div>
-          <input class="fi" id="toc-title" type="text" placeholder="ประเด็นสำคัญ" value="ประเด็นสำคัญ" oninput="onTocTitleChange()">
+          <input class="fi" id="toc-title" type="text" placeholder="ประเด็นสำคัญ" value="ประเด็นสำคัญ">
           <div style="display:flex;gap:6px">
             <button class="rbtn" onclick="setTocTitle('ประเด็นสำคัญ')">ไทย</button>
             <button class="rbtn" onclick="setTocTitle('Key Point')">English</button>
@@ -259,6 +254,11 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
             <span class="toggle-slider"></span>
           </span>
         </label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="lbl">วางบทความ หรือพิมพ์หัวข้อ H2</div>
+          <textarea id="input-text" placeholder="วิธีที่ 1 — ตัวเลข + หัวข้อ (แนะนำ):&#10;1. Apple iPhone 17 มีอะไรใหม่&#10;2. ราคาและวันวางจำหน่าย&#10;&#10;วิธีที่ 2 — เว้นบรรทัดว่างทั้งสองด้าน:&#10;&#10;Apple iPhone 17 มีอะไรใหม่&#10;&#10;วิธีที่ 3 — ## หรือ &lt;h2&gt;:&#10;## Apple iPhone 17 มีอะไรใหม่&#10;&#10;วิธีที่ 4 — วางบทความเต็มที่มี &lt;h2&gt; หรือ img/iframe"></textarea>
+          <div class="char-row"><span id="char-count">0 ตัวอักษร</span><span>วาง HTML จาก WordPress ได้เลย</span></div>
+        </div>
         <div id="h2-preview" style="display:none">
           <div class="lbl" style="margin-bottom:8px">H2 ที่ตรวจพบ</div>
           <div style="display:flex;flex-direction:column;gap:7px" id="h2-list"></div>

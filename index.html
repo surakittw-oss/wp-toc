@@ -187,6 +187,36 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
 @media(max-width:1024px){.page{grid-template-columns:1fr;padding:16px 16px 36px}.btng-grid{grid-template-columns:1fr}.btng-left{border-right:none;border-bottom:1px solid var(--border)}}
 @media(max-width:768px){header{padding:0 16px}.hd-tag{display:none}.page{padding:12px 12px 28px;gap:12px}.card-body,.out-body{padding:16px;gap:12px}.cat-grid{grid-template-columns:repeat(3,1fr)}.tab{padding:14px 16px;min-height:48px;font-size:12px}footer{flex-direction:column;gap:4px;text-align:center}.btng-section{padding:0 12px 28px}.btng-left,.btng-right{padding:14px}}
 @media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr)}.cat-btn{min-height:54px}textarea{min-height:180px}}
+
+/* ═══ TABLET / MOBILE (≤1024px): scroll ตัวเดียว · แถบปุ่มติดขอบล่างจอ · พื้นที่แตะใหญ่ขึ้น ═══ */
+@media(max-width:1024px){
+  .card{overflow:clip}                      /* clip ไม่สร้าง scroll container → sticky ทำงานกับหน้าจอได้ */
+  .card-body{max-height:none;overflow:visible}
+  .btn-sticky-wrap{flex-direction:row;align-items:stretch;gap:10px;margin:0 -22px -20px;padding:12px 22px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);box-shadow:0 -10px 18px -12px rgba(0,0,0,.18)}
+  .btn-sticky-wrap .btn-gen{flex:1 1 0;width:auto;min-width:0;white-space:nowrap}
+  .btn-sticky-wrap .btn-clear{flex:0 0 auto;width:auto;padding:0 20px;white-space:nowrap}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  #out-card{scroll-margin-top:64px}
+  .cat-grid{gap:10px}
+  .cat-btn{min-height:58px;font-size:13px}
+  .cat-name{font-size:13px}
+  .input-card .rbtn{min-height:46px;font-size:13px;padding:10px 8px}
+  .input-card .fi{min-height:48px}
+  .toggle-row{min-height:52px}
+  .toggle-sw{width:52px;height:30px}
+  .toggle-slider::before{width:24px;height:24px}
+  .toggle-sw input:checked + .toggle-slider::before{transform:translateX(22px)}
+  .btn-remove{width:40px;height:40px}
+  .btn-cp{min-height:44px;padding:10px 18px}
+}
+@media(max-width:768px){
+  .btn-sticky-wrap{margin:0 -16px -16px;padding-left:16px;padding-right:16px}
+  .input-card .fi,.input-card textarea{font-size:16px}   /* 16px ป้องกัน iOS Safari ซูมหน้าเองตอนแตะช่องพิมพ์ */
+}
+@media(max-width:480px){
+  .btn-sticky-wrap .btn-clear .btn-lbl{display:none}      /* จอแคบ: Clear เหลือแค่ไอคอนถังขยะ ให้ปุ่ม Generate กว้างพอ */
+  .btn-sticky-wrap .btn-clear{padding:0 18px}
+}
 </style>
 </head>
 <body>
@@ -268,16 +298,16 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             Generate TOC + H2
           </button>
-          <button class="btn-clear" id="btn-clear" onclick="clearAll()">
+          <button class="btn-clear" id="btn-clear" onclick="clearAll()" aria-label="Clear ข้อความ" title="Clear ข้อความ">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-            Clear ข้อความ
+            <span class="btn-lbl">Clear ข้อความ</span>
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="out-card">
+  <div class="out-card" id="out-card">
     <div class="card-head">
       <span class="card-title">Output</span>
       <button class="btn-cp" id="btn-copy-all" style="display:none" onclick="copyAll()">
@@ -415,9 +445,9 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               ฝัง Link ทั้งหมด
             </button>
-            <button class="btn-clear" id="btn-link-clear" onclick="clearLinks()">
+            <button class="btn-clear" id="btn-link-clear" onclick="clearLinks()" aria-label="Clear ทั้งหมด" title="Clear ทั้งหมด">
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-              Clear ทั้งหมด
+              <span class="btn-lbl">Clear ทั้งหมด</span>
             </button>
           </div>
         </div>
@@ -678,6 +708,15 @@ function toggleRemove(idx) {
   renderH2Preview(detectedH2,false)
 }
 
+// จอเล็ก (layout เรียงลง): หลัง Generate เสร็จ เลื่อนไปที่การ์ดผลลัพธ์ให้เห็นทันที
+function scrollToOutputIfStacked() {
+  if (!window.matchMedia('(max-width:1024px)').matches) return
+  const el = document.getElementById('out-card')
+  if (!el) return
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+}
+
 function generate() {
   const activeH2=detectedH2.filter((_,i)=>!removedSet.has(i))
   if(!activeH2.length) return
@@ -710,7 +749,7 @@ function generate() {
     document.getElementById('btn-copy-all').style.display='flex'
     showToast('✓ Code พร้อมแล้ว!')
 
-    setTimeout(() => switchTab(activeTab), 0)
+    setTimeout(() => { switchTab(activeTab); scrollToOutputIfStacked() }, 0)
   }, 0)
 }
 

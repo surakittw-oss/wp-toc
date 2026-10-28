@@ -188,6 +188,85 @@ footer{border-top:1px solid var(--border);padding:14px 28px;display:flex;justify
 @media(max-width:768px){header{padding:0 16px}.hd-tag{display:none}.page{padding:12px 12px 28px;gap:12px}.card-body,.out-body{padding:16px;gap:12px}.cat-grid{grid-template-columns:repeat(3,1fr)}.tab{padding:14px 16px;min-height:48px;font-size:12px}footer{flex-direction:column;gap:4px;text-align:center}.btng-section{padding:0 12px 28px}.btng-left,.btng-right{padding:14px}}
 @media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr)}.cat-btn{min-height:54px}textarea{min-height:180px}}
 
+/* ═══════════ REDESIGN · MINIMAL — สกินล้วน (สี เส้น มุมโค้ง ตัวอักษร) ไม่แตะ layout/logic ═══════════ */
+:root{
+  --bg:#f6f6f3; --card:#ffffff;
+  --border:rgba(20,20,18,.08); --border2:rgba(20,20,18,.14);
+  --tx:#161615; --tx2:#5f5f5b; --tx3:#8c8c87;
+  --red-bg:rgba(230,34,39,.06); --red-bd:rgba(230,34,39,.16);
+  --green:#2f9e57;
+  --r-sm:8px; --r-md:12px; --r-xl:20px;
+  --sh:0 1px 2px rgba(20,20,18,.04);
+}
+body.dark{
+  --bg:#0f0f10; --card:#171719;
+  --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.14);
+  --tx:#f3f3f1; --tx2:#a1a19c; --tx3:#6f6f6b;
+  --red-bg:rgba(230,34,39,.14); --red-bd:rgba(230,34,39,.28);
+  --sh:0 1px 2px rgba(0,0,0,.5);
+}
+*{scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+::selection{background:color-mix(in srgb,var(--red) 18%,transparent)}
+header,body.dark header{background:color-mix(in srgb,var(--bg) 86%,transparent)}
+.page{gap:20px}
+
+/* หัวเว็บ + แถบสลับเครื่องมือ: ตัวหนังสือเรียบ เส้นใต้สีหมึกแทนสีแดง */
+.hd-title{font-size:14px;font-weight:600}
+.hd-tag{border-color:var(--border2);color:var(--tx2)}
+.tool-tab-name{font-weight:500}
+.tool-tab:hover .tool-tab-name{color:var(--tx)}
+.tool-tab.active{border-bottom-color:var(--tx)}
+.tool-tab.active .tool-tab-name{color:var(--tx)}
+
+/* หัวการ์ดและป้ายกำกับ: เงียบลง ไม่มีแถบแดง */
+.card-title{font-size:11px;font-weight:500;letter-spacing:1.6px;color:var(--tx2)}
+.card-title::before{display:none}
+.lbl,.fl{font-size:12px;font-weight:500;letter-spacing:0;color:var(--tx2)}
+
+/* ปุ่มหมวดข่าว: ชิปมีจุดสี แทนแถบสีด้านล่าง */
+.cat-btn{flex-direction:row;gap:8px;background:var(--card);border-color:var(--border2);color:var(--tx2);font-weight:500}
+.cat-btn::after{display:none}
+.cat-icon{width:8px;height:8px;border-radius:50%}
+.cat-name{font-weight:500}
+.cat-btn:hover{background:var(--card);border-color:var(--tx3);color:var(--tx)}
+.cat-btn.active{color:var(--tx);border-color:var(--cat-color,var(--tx));background:color-mix(in srgb,var(--cat-color,var(--tx)) 7%,var(--card));box-shadow:0 0 0 3px color-mix(in srgb,var(--cat-color,var(--tx)) 14%,transparent)}
+
+/* ช่องกรอก: โฟกัสเป็นเส้นสีหมึก */
+textarea:focus,.fi:focus,body.dark textarea:focus{border-color:var(--tx);background:var(--card);box-shadow:0 0 0 3px color-mix(in srgb,var(--tx) 8%,transparent)}
+
+/* H2 chips: การ์ดเรียบ แทนพื้นแดง */
+.h2-chip{background:var(--card);border-color:var(--border2)}
+.h2-chip.removed{background:var(--bg);border-style:dashed}
+.h2-num{color:var(--tx3)}
+.h2-id{background:var(--bg);color:var(--tx3)}
+
+/* ปุ่มหลัก: แดงเรียบ ไม่ยกตัว ไม่เรืองแสง */
+.btn-gen,.btng-action{font-weight:600}
+.btn-gen:hover:not(:disabled){transform:none;box-shadow:none;background:color-mix(in srgb,var(--red) 88%,#000)}
+.btng-action:hover{transform:none;box-shadow:none;background:color-mix(in srgb,var(--red) 88%,#000)}
+.btn-gen:disabled{background:var(--border);color:var(--tx3)}
+
+/* ปุ่มรอง: เส้นบาง เปลี่ยนเป็นสีหมึกตอน hover */
+.btn-cp:hover{border-color:var(--tx);color:var(--tx);background:transparent}
+.hd-logout:hover,.btn-remove:hover{background:transparent}
+
+/* แท็บผลลัพธ์ + ตัวเลือกใน Button Generator: สถานะ active เป็นสีหมึก */
+.tab.active{color:var(--tx);border-bottom-color:var(--tx)}
+.tab:hover{color:var(--tx)}
+.rbtn.active{border-color:var(--tx);color:var(--tx);background:transparent}
+.cdot.active{border-color:var(--tx)}
+
+/* สวิตช์ + คู่มือ */
+.toggle-slider{background:color-mix(in srgb,var(--tx) 28%,var(--card))}
+.step-num{color:var(--tx2);background:var(--bg);border-color:var(--border)}
+
+/* toast กลับสีในโหมดมืดให้เห็นชัด + โฟกัสคีย์บอร์ด */
+body.dark .toast{background:rgba(243,243,241,.96);color:#111}
+button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
+.toggle-sw input:focus-visible + .toggle-slider{outline:2px solid var(--tx);outline-offset:2px}
+
+@media(max-width:768px){.page{gap:12px}}
+
 /* ═══ TABLET / MOBILE (≤1024px): scroll ตัวเดียว · แถบปุ่มติดขอบล่างจอ · พื้นที่แตะใหญ่ขึ้น ═══ */
 @media(max-width:1024px){
   .card{overflow:clip}                      /* clip ไม่สร้าง scroll container → sticky ทำงานกับหน้าจอได้ */

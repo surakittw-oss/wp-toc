@@ -267,11 +267,20 @@ button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
 
 @media(max-width:768px){.page{gap:12px}}
 
+/* ═══════════ FOOTER BAR: ปุ่ม Generate/Clear เป็น footer ของการ์ด (ไม่ลอยทับเนื้อหา) ═══════════ */
+.card.has-foot{display:flex;flex-direction:column;max-height:max(460px,calc(100vh - 170px))}  /* 170px = header + แถบเครื่องมือ + ช่องไฟ */
+.card.has-foot > .card-body{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto}
+.btn-sticky-wrap{position:static;flex:0 0 auto;flex-direction:row;align-items:stretch;gap:10px;margin:0;padding:14px 22px;background:var(--card);border-top:1px solid var(--border)}
+.btn-sticky-wrap .btn-gen{flex:1 1 0;width:auto;min-width:0;white-space:nowrap}
+.btn-sticky-wrap .btn-clear{flex:0 0 auto;width:auto;padding:0 20px;white-space:nowrap}
+
 /* ═══ TABLET / MOBILE (≤1024px): scroll ตัวเดียว · แถบปุ่มติดขอบล่างจอ · พื้นที่แตะใหญ่ขึ้น ═══ */
 @media(max-width:1024px){
   .card{overflow:clip}                      /* clip ไม่สร้าง scroll container → sticky ทำงานกับหน้าจอได้ */
   .card-body{max-height:none;overflow:visible}
-  .btn-sticky-wrap{flex-direction:row;align-items:stretch;gap:10px;margin:0 -22px -20px;padding:12px 22px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);box-shadow:0 -10px 18px -12px rgba(0,0,0,.18)}
+  .card.has-foot{display:block;max-height:none}
+  .card.has-foot > .card-body{overflow:visible}
+  .btn-sticky-wrap{position:sticky;bottom:0;z-index:5;padding:12px 22px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 18px -12px rgba(0,0,0,.18)}
   .btn-sticky-wrap .btn-gen{flex:1 1 0;width:auto;min-width:0;white-space:nowrap}
   .btn-sticky-wrap .btn-clear{flex:0 0 auto;width:auto;padding:0 20px;white-space:nowrap}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
@@ -289,7 +298,7 @@ button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
   .btn-cp{min-height:44px;padding:10px 18px}
 }
 @media(max-width:768px){
-  .btn-sticky-wrap{margin:0 -16px -16px;padding-left:16px;padding-right:16px}
+  .btn-sticky-wrap{padding-left:16px;padding-right:16px}
   .input-card .fi,.input-card textarea{font-size:16px}   /* 16px ป้องกัน iOS Safari ซูมหน้าเองตอนแตะช่องพิมพ์ */
 }
 @media(max-width:480px){
@@ -331,7 +340,7 @@ button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
 
 <div class="page">
   <div style="display:flex;flex-direction:column;gap:12px">
-    <div class="card input-card">
+    <div class="card input-card has-foot">
       <div class="card-head">
         <span class="card-title">Input</span>
         <span id="h2-count" style="font-family:var(--mono);font-size:10px;color:var(--tx3)">0 H2 detected</span>
@@ -372,7 +381,8 @@ button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
           <div class="lbl" style="margin-bottom:8px">H2 ที่ตรวจพบ</div>
           <div style="display:flex;flex-direction:column;gap:7px" id="h2-list"></div>
         </div>
-        <div class="btn-sticky-wrap">
+      </div>
+      <div class="btn-sticky-wrap">
           <button class="btn-gen" id="btn-gen" disabled>
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             Generate TOC + H2
@@ -382,7 +392,6 @@ button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
             <span class="btn-lbl">Clear ข้อความ</span>
           </button>
         </div>
-      </div>
     </div>
   </div>
 
@@ -489,7 +498,7 @@ button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
 <div class="link-section" style="display:none">
   <div class="page">
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="card">
+      <div class="card has-foot">
         <div class="card-head">
           <span class="card-title">Input</span>
           <span id="link-count" style="font-family:var(--mono);font-size:10px;color:var(--tx3)">0 link</span>
@@ -519,7 +528,8 @@ button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
               <span class="toggle-slider"></span>
             </label>
           </div>
-          <div class="btn-sticky-wrap">
+      </div>
+      <div class="btn-sticky-wrap">
             <button class="btn-gen" id="btn-link-gen" disabled onclick="generateLinks()">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               ฝัง Link ทั้งหมด
@@ -529,7 +539,6 @@ button:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
               <span class="btn-lbl">Clear ทั้งหมด</span>
             </button>
           </div>
-        </div>
       </div>
     </div>
 
